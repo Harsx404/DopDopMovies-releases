@@ -1,0 +1,786 @@
+{
+  "schema": 1,
+  "version": "2026.11.1.8",
+  "minApp": "1.2.21",
+  "modules": {
+    "videasy": {
+      "file": "modules/videasy.mjs",
+      "version": "1.1.0",
+      "config": {
+        "apis": [
+          {
+            "api": "https://api.wecollege.net",
+            "db": "https://db.wecollege.net",
+            "referer": "https://www.vidy.st/",
+            "origin": "https://www.vidy.st",
+            "fmt": "city"
+          },
+          {
+            "api": "https://api.speedracelight.com",
+            "db": "https://db.speedracelight.com",
+            "referer": "https://www.vidking.net/",
+            "origin": "https://www.vidking.net",
+            "fmt": "legacy"
+          }
+        ],
+        "legacyEndpoints": {
+          "videasy-yoru": "cdn/sources-with-title",
+          "videasy-breach": "m4uhd/sources-with-title",
+          "videasy-vyse": "hdmovie/sources-with-title"
+        },
+        "cities": {
+          "videasy-yoru": [
+            "miami",
+            "boise",
+            "denver",
+            "seattle"
+          ],
+          "videasy-breach": [
+            "denver",
+            "phoenix",
+            "seattle",
+            "miami"
+          ],
+          "videasy-vyse": [
+            "delhi",
+            "miami",
+            "boise"
+          ]
+        },
+        "vidzen": {
+          "api": "https://vidzen.fun",
+          "referer": "https://vidcore.org/"
+        }
+      }
+    },
+    "vidcore": {
+      "file": "modules/vidcore.mjs",
+      "version": "1.2.0",
+      "config": {
+        "api": "https://vidrack.created.app",
+        "referer": "https://vidcore.org/"
+      }
+    },
+    "vidsrc": {
+      "file": "modules/vidsrc.mjs",
+      "version": "1.1.0",
+      "config": {
+        "api": "https://vsembed.ru",
+        "apiReferer": "https://vidsrc.to/",
+        "playerReferer": "https://vsembed.ru/"
+      }
+    },
+    "wing": {
+      "file": "modules/wing.mjs",
+      "version": "1.1.0",
+      "config": {
+        "api": "https://api.wing.st"
+      }
+    },
+    "nepu": {
+      "file": "modules/nepu.mjs",
+      "version": "1.0.0",
+      "config": {
+        "base": "https://nepu.io"
+      }
+    },
+    "cartoons": {
+      "file": "modules/cartoons.mjs",
+      "version": "1.0.0",
+      "config": {
+        "supercartoons": "https://www.supercartoons.net",
+        "toonjet": "https://www.toonjet.com",
+        "archive": "https://archive.org"
+      }
+    },
+    "kaa": {
+      "file": "modules/kaa.mjs",
+      "version": "1.0.0",
+      "config": {
+        "base": "https://kaa.lt"
+      }
+    },
+    "animeparadise": {
+      "file": "modules/animeparadise.mjs",
+      "version": "1.0.0",
+      "config": {
+        "api": "https://api.animeparadise.moe",
+        "stream": "https://stream.animeparadise.moe",
+        "referer": "https://animeparadise.moe/"
+      }
+    },
+    "vega": {
+      "file": "modules/vega.mjs",
+      "version": "1.2.0",
+      "config": {
+        "pixeldrain": "https://pixeldrain.dev"
+      }
+    },
+    "vega-domains": {
+      "file": "modules/vega-domains.mjs",
+      "version": "1.1.0",
+      "config": {}
+    },
+    "live-streamfree": {
+      "file": "modules/live-streamfree.mjs",
+      "version": "1.1.0",
+      "config": {
+        "base": "https://streamfree.top",
+        "mirrors": [
+          "https://strmfree.st"
+        ]
+      }
+    },
+    "live-sportsindx": {
+      "file": "modules/live-sportsindx.mjs",
+      "version": "1.1.0",
+      "config": {
+        "base": "https://sportsindx.st"
+      }
+    },
+    "live-pluto": {
+      "file": "modules/live-pluto.mjs",
+      "version": "1.1.0",
+      "config": {
+        "boot": "https://boot.pluto.tv/v4/start",
+        "categories": {
+          "movies": "movies",
+          "entertainment": "entertainment",
+          "news + opinion": "news",
+          "news": "news",
+          "comedy": "entertainment",
+          "sports": "sports",
+          "kids": "kids",
+          "music": "music",
+          "documentaries": "documentary",
+          "lifestyle": "lifestyle",
+          "reality": "entertainment",
+          "drama": "entertainment",
+          "crime": "entertainment",
+          "sci-fi": "entertainment",
+          "action": "entertainment",
+          "classics": "entertainment",
+          "anime": "animation",
+          "food": "lifestyle",
+          "home + diy": "lifestyle",
+          "tech + geek": "education",
+          "gaming": "gaming",
+          "travel": "lifestyle"
+        }
+      }
+    },
+    "live-scores": {
+      "file": "modules/live-scores.mjs",
+      "version": "1.0.0",
+      "config": {
+        "base": "https://site.api.espn.com/apis/site/v2/sports",
+        "fallback": {
+          "soccer": "soccer/all",
+          "basketball": "basketball/nba",
+          "football": "football/nfl",
+          "hockey": "hockey/nhl",
+          "baseball": "baseball/mlb"
+        },
+        "leagues": {
+          "Premier League": "soccer/eng.1",
+          "MLS": "soccer/usa.1",
+          "La Liga": "soccer/esp.1",
+          "Serie A": "soccer/ita.1",
+          "Bundesliga": "soccer/ger.1",
+          "Ligue 1": "soccer/fra.1",
+          "Champions League": "soccer/uefa.champions",
+          "Europa League": "soccer/uefa.europa",
+          "NBA": "basketball/nba",
+          "NFL": "football/nfl",
+          "NCAAF": "football/college-football",
+          "NHL": "hockey/nhl",
+          "MLB": "baseball/mlb"
+        }
+      }
+    },
+    "piratexplay": {
+      "file": "modules/piratexplay.mjs",
+      "version": "1.0.0",
+      "config": {
+        "base": "https://piratexplay.cc",
+        "catalogPages": 2
+      }
+    },
+    "live-timstreams": {
+      "file": "modules/live-timstreams.mjs",
+      "version": "1.1.0",
+      "config": {
+        "base": "https://tim-streams.com",
+        "genres": {
+          "1": "entertainment",
+          "2": "sports",
+          "3": "animation",
+          "4": "movies",
+          "5": "news"
+        }
+      }
+    },
+    "audio-radio": {
+      "file": "modules/audio-radio.mjs",
+      "version": "1.0.0",
+      "config": {
+        "base": "https://de1.api.radio-browser.info",
+        "userAgent": "DopDopMovies/1.0"
+      }
+    },
+    "read-mangakatana": {
+      "file": "modules/read-mangakatana.mjs",
+      "version": "1.0.0",
+      "config": {
+        "MK_BASE": "https://mangakatana.com"
+      }
+    },
+    "read-mangaread": {
+      "file": "modules/read-mangaread.mjs",
+      "version": "1.0.0",
+      "config": {
+        "MANGAREAD_BASE": "https://www.mangaread.org"
+      }
+    },
+    "read-asura": {
+      "file": "modules/read-asura.mjs",
+      "version": "1.0.0",
+      "config": {
+        "ASURA_API": "https://api.asurascans.com"
+      }
+    },
+    "read-flame": {
+      "file": "modules/read-flame.mjs",
+      "version": "1.0.0",
+      "config": {
+        "FLAME_BASE": "https://flamecomics.xyz"
+      }
+    },
+    "read-hive": {
+      "file": "modules/read-hive.mjs",
+      "version": "1.0.0",
+      "config": {
+        "HIVE_API": "https://api.hivetoons.org"
+      }
+    },
+    "read-mangapill": {
+      "file": "modules/read-mangapill.mjs",
+      "version": "1.0.0",
+      "config": {
+        "MANGAPILL_BASE": "https://mangapill.com",
+        "MANGAPILL_CDN": "https://cdn.readdetectiveconan.com"
+      }
+    },
+    "read-rco": {
+      "file": "modules/read-rco.mjs",
+      "version": "1.0.0",
+      "config": {
+        "RCO_BASE": "https://readcomicsonline.lol",
+        "RCO_CDN": "https://cdn.readcomicsonline.lol"
+      }
+    },
+    "read-novelfull": {
+      "file": "modules/read-novelfull.mjs",
+      "version": "1.0.0",
+      "config": {
+        "NOVELFULL_BASE": "https://novelfull.com"
+      }
+    },
+    "read-novelbuddy": {
+      "file": "modules/read-novelbuddy.mjs",
+      "version": "1.0.0",
+      "config": {
+        "NB_BASE": "https://novelbuddy.me",
+        "NB_API": "https://api.novelbuddy.me"
+      }
+    },
+    "audio-jiosaavn": {
+      "file": "modules/audio-jiosaavn.mjs",
+      "version": "1.0.0",
+      "config": {
+        "SAAVN_API": "https://www.jiosaavn.com/api.php?_format=json&_marker=0&api_version=4"
+      }
+    },
+    "dramafren": {
+      "file": "modules/dramafren.mjs",
+      "version": "1.1.0",
+      "config": {}
+    }
+  },
+  "sources": [
+    {
+      "id": "videasy-yoru",
+      "label": "Yoru",
+      "kind": "hls",
+      "note": "4K · subtitles",
+      "subtitles": true,
+      "module": "videasy",
+      "params": {
+        "fallback": "vidzen"
+      }
+    },
+    {
+      "id": "vidcore-movy",
+      "label": "Movy",
+      "kind": "hls",
+      "note": "4K · fast",
+      "module": "vidcore",
+      "params": {
+        "upstream": "lfmx"
+      },
+      "resolveTimeoutMs": 45000
+    },
+    {
+      "id": "vidcore-cineplay",
+      "label": "Cineplay",
+      "kind": "hls",
+      "note": "1080p",
+      "module": "vidcore",
+      "params": {
+        "upstream": "movish"
+      },
+      "resolveTimeoutMs": 45000
+    },
+    {
+      "id": "videasy-breach",
+      "label": "Breach",
+      "kind": "hls",
+      "note": "auto quality",
+      "subtitles": true,
+      "module": "videasy",
+      "fallback": "vidcore-cineplay"
+    },
+    {
+      "id": "videasy-vyse",
+      "label": "Vyse",
+      "kind": "hls",
+      "note": "Hindi + English audio",
+      "subtitles": true,
+      "dualAudio": true,
+      "module": "videasy",
+      "params": {
+        "fallback": "vidzen"
+      }
+    },
+    {
+      "id": "vidcore-nova",
+      "label": "Nova",
+      "kind": "hls",
+      "note": "1080p · alt CDN",
+      "module": "vidcore",
+      "params": {
+        "upstream": "nova"
+      },
+      "resolveTimeoutMs": 45000,
+      "fallback": "vidcore-cineplay"
+    },
+    {
+      "id": "wing",
+      "label": "Cinejoy",
+      "kind": "hls",
+      "note": "1080p · multi-server",
+      "module": "wing",
+      "resolveTimeoutMs": 90000,
+      "fallback": "vidcore-cineplay"
+    },
+    {
+      "id": "nepu",
+      "label": "Nepu",
+      "kind": "hls",
+      "note": "movies & shows · needs app",
+      "resolveTimeoutMs": 60000,
+      "module": "nepu"
+    },
+    {
+      "id": "piratexplay",
+      "label": "PirateXPlay",
+      "kind": "hls",
+      "note": "Hindi, Tamil, Telugu · desktop app",
+      "dualAudio": true,
+      "scope": "cartoon",
+      "resolveTimeoutMs": 60000,
+      "module": "piratexplay"
+    },
+    {
+      "id": "supercartoons",
+      "label": "SuperCartoons",
+      "kind": "hls",
+      "note": "classic cartoons",
+      "types": [
+        "tv"
+      ],
+      "scope": "cartoon",
+      "module": "cartoons",
+      "params": {
+        "site": "supercartoons"
+      }
+    },
+    {
+      "id": "toonjet",
+      "label": "ToonJet",
+      "kind": "hls",
+      "note": "classic cartoons",
+      "types": [
+        "tv"
+      ],
+      "scope": "cartoon",
+      "module": "cartoons",
+      "params": {
+        "site": "toonjet"
+      }
+    },
+    {
+      "id": "archive-cartoons",
+      "label": "Archive.org",
+      "kind": "hls",
+      "note": "public-domain cartoons",
+      "types": [
+        "tv"
+      ],
+      "scope": "cartoon",
+      "module": "cartoons",
+      "params": {
+        "site": "archive"
+      }
+    },
+    {
+      "id": "kaa",
+      "label": "KickAssAnime",
+      "kind": "hls",
+      "note": "sub & dub · subtitles",
+      "subtitles": true,
+      "scope": "anime",
+      "module": "kaa"
+    },
+    {
+      "id": "animeparadise",
+      "label": "AnimeParadise",
+      "kind": "hls",
+      "note": "anime · multi-quality",
+      "subtitles": true,
+      "scope": "anime",
+      "resolveTimeoutMs": 45000,
+      "module": "animeparadise"
+    },
+    {
+      "id": "vega",
+      "label": "VegaMovies",
+      "kind": "hls",
+      "note": "Hindi · dual audio · direct links",
+      "dualAudio": true,
+      "scope": "bollywood",
+      "resolveTimeoutMs": 120000,
+      "module": "vega-domains",
+      "params": {
+        "name": "VegaMovies",
+        "search": [
+          {
+            "base": "https://vegamovies.domains",
+            "api": "html"
+          }
+        ]
+      },
+      "fallback": "vega-mirror"
+    },
+    {
+      "id": "vega-mirror",
+      "label": "Vega Mirror",
+      "kind": "hls",
+      "note": "Hindi · dual audio · no verification",
+      "dualAudio": true,
+      "scope": "bollywood",
+      "resolveTimeoutMs": 60000,
+      "module": "vega",
+      "params": {
+        "name": "VegaMovies",
+        "search": [
+          {
+            "base": "https://veqamovies.xyz",
+            "api": "html"
+          }
+        ]
+      }
+    },
+    {
+      "id": "drive",
+      "label": "MoviesDrive",
+      "kind": "hls",
+      "note": "Hindi · Prime/series coverage",
+      "scope": "bollywood",
+      "resolveTimeoutMs": 60000,
+      "module": "vega",
+      "params": {
+        "name": "MoviesDrive",
+        "search": [
+          {
+            "base": "https://new1.moviesdrive.cyou",
+            "api": "typesense"
+          }
+        ]
+      }
+    },
+    {
+      "id": "lux",
+      "label": "RogMovies",
+      "kind": "hls",
+      "note": "Hindi · Vega-family mirror",
+      "scope": "bollywood",
+      "resolveTimeoutMs": 60000,
+      "module": "vega",
+      "params": {
+        "name": "RogMovies",
+        "search": [
+          {
+            "base": "https://new2.rogmovies.click",
+            "api": "typesense"
+          }
+        ]
+      }
+    },
+    {
+      "id": "embed-vidlink",
+      "label": "VidLink",
+      "kind": "embed",
+      "note": "backup player · resumes where you left off",
+      "embed": {
+        "progress": true,
+        "movie": "https://vidlink.pro/movie/{id}",
+        "tv": "https://vidlink.pro/tv/{id}/{season}/{episode}",
+        "query": {
+          "autoplay": "true",
+          "title": "false",
+          "nextbutton": "false",
+          "poster": "true"
+        },
+        "accentQuery": {
+          "primaryColor": "{accent}",
+          "secondaryColor": "a2a2a2",
+          "iconColor": "eefdec"
+        },
+        "startQuery": "startAt"
+      }
+    },
+    {
+      "id": "embed-vidrock",
+      "label": "Vidrock",
+      "kind": "embed",
+      "note": "backup player",
+      "embed": {
+        "movie": "https://vidrock.to/embed/movie/{id}",
+        "tv": "https://vidrock.to/embed/tv/{id}/{season}/{episode}"
+      }
+    },
+    {
+      "id": "embed-2embed",
+      "label": "2Embed",
+      "kind": "embed",
+      "note": "backup player · multi-server",
+      "embed": {
+        "movie": "https://www.2embed.cc/embed/{id}",
+        "tv": "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}"
+      }
+    },
+    {
+      "id": "vidsrc",
+      "label": "VidSrc",
+      "kind": "embed",
+      "note": "backup player · may need VPN",
+      "needsVpn": true,
+      "module": "vidsrc",
+      "embed": {}
+    }
+  ],
+  "files": {
+    "modules/animeparadise.mjs": "3db747e359758b10de1b0e5e3165b7881fa1530719e993e42ffd8748fd56aa95",
+    "modules/audio-jiosaavn.mjs": "5bd247846bc1bc0509b0a99bc3c4ebab4a4f37727148b93170af9459e297674d",
+    "modules/audio-radio.mjs": "fa5bd058b22fffb290b7ce9d0ab259e1a72d98443c8ba0e782bbb347e151df3c",
+    "modules/cartoons.mjs": "e0aee790c83080ee779b66e4335cc081773f1b3a7b4b58fb75768b45fb390107",
+    "modules/dramafren.mjs": "6616466a7a8e53c2b5283fb8f87cd8147a003b3496277b7febdce5100855c3dd",
+    "modules/kaa.mjs": "3f2316a99caea0378311a653acd9adb89b395f120b9f25902d7720384060e814",
+    "modules/live-media.mjs": "5abe4e73ec9990a9f6f23841945d231632fee21cfe67a1ad632cc4a9104fb89e",
+    "modules/live-pluto.mjs": "49129797e153443b9b84ccaf8e574cf8cd1ef8329998e37a63801c53ae13de04",
+    "modules/live-scores.mjs": "b0b3c75ab7fb0b53f28e42596b196812a66be7a74e24758d1142df078185f230",
+    "modules/live-sportsindx.mjs": "39f76bf8edc7c0cca3f48b34c27535e5b0657367f6d84b9b0356ff4bfba57dd7",
+    "modules/live-streamfree.mjs": "36620ca9c3295306b66dd88002efb3456e3155185dfd16a0c1d7dbcc265a12af",
+    "modules/live-timstreams.mjs": "257b9903070b2fb7e13de42ad93d26fcab108323b09143d8f9cd365f466777b5",
+    "modules/nepu.mjs": "d3b4ec38a2112c39c010d7983530eb00736870434913be596632ed6441394ef1",
+    "modules/piratexplay.mjs": "9920721bf02899c46decc0694ac2a9dd069659e155cb3e8b4bcea63180b71c99",
+    "modules/read-asura.mjs": "c5028cfb30f12f818f0e2dc2acc104f9205d01b5e7d23c133eaa30e0eafb46ad",
+    "modules/read-flame.mjs": "3015f89b2ed058289c02879f2416b4521fe29e1321c695e5b38bc2e073b63e4c",
+    "modules/read-hive.mjs": "8f8c8484d7c34d9aef2a5a53b67315b36c0404fb0e8629cf266557cbf50e50f0",
+    "modules/read-mangakatana.mjs": "5ab7064e36a525f0f635bb2e29cf29ba71304e9c48dbb449ddf69c6edbe7dd22",
+    "modules/read-mangapill.mjs": "7d95978411d2c64c97aac6c92cce2e85cabfdef721ff746208410a93209d24eb",
+    "modules/read-mangaread.mjs": "f773ebcc318e0c64829b1f5748ae59de113dec5ac464fa4623cd85886c84461a",
+    "modules/read-novelbuddy.mjs": "4c86603fc364232b23b4f202296b0184e8553afc8a61d3751ed2bf4966268e54",
+    "modules/read-novelfull.mjs": "60739e2f655de2f8ce847b8dcad729a82730b523220b4361f00e1e9549533ac1",
+    "modules/read-rco.mjs": "5256845a0eb4c22bf156bc078f45a807b83096c74f7168933aa8e92205d1248a",
+    "modules/vega-domains.mjs": "71ab7c377bde7585867262c516efb873970228295934e3efacc197a0ed1509f3",
+    "modules/vega.mjs": "ae5042ff9d22a923172cd99b7542f67f50ab04a6e24aee9a7e1526e90f75cf3b",
+    "modules/vidcore.mjs": "fd48b8ab2ddf68a4b02f9b88d02892ee442f2e138a0917550eea448b7751eb13",
+    "modules/videasy.mjs": "4e354a7f90a348daf15145d30fb3e684cb1215174f430caaba2c268f02940fcf",
+    "modules/vidsrc.mjs": "3f0fe46b3387280e77020bf8ace01992376834ad49d645aeeb88e240bfbf4263",
+    "modules/wing-crush.wasm": "40c923580779e2a850fc5ab3f0046be565ed717883cf4547ed3a87de2450bdcf",
+    "modules/wing.mjs": "f1ffb2a0f52011617b0a67b0d93e35c5cc956334299881d7dcf8875876a99614"
+  },
+  "live": [
+    {
+      "id": "live-pluto",
+      "label": "Pluto TV",
+      "note": "free channels & schedule",
+      "module": "live-pluto"
+    },
+    {
+      "id": "live-timstreams",
+      "label": "Tim Streams",
+      "note": "24/7 sports and news channels · desktop app",
+      "module": "live-timstreams"
+    },
+    {
+      "id": "live-streamfree",
+      "label": "StreamFree",
+      "note": "live sports",
+      "module": "live-streamfree"
+    },
+    {
+      "id": "live-sportsindx",
+      "label": "SportsIndX",
+      "note": "more sports, 24/7 channels",
+      "module": "live-sportsindx"
+    },
+    {
+      "id": "live-scores",
+      "label": "Scores",
+      "note": "scores for matches you follow",
+      "module": "live-scores"
+    }
+  ],
+  "read": [
+    {
+      "id": "read-mangakatana",
+      "label": "MangaKatana",
+      "note": "manhua",
+      "module": "read-mangakatana"
+    },
+    {
+      "id": "read-mangaread",
+      "label": "MangaRead",
+      "note": "manhua",
+      "module": "read-mangaread"
+    },
+    {
+      "id": "read-asura",
+      "label": "Asura Scans",
+      "note": "manhwa",
+      "module": "read-asura"
+    },
+    {
+      "id": "read-flame",
+      "label": "Flame Comics",
+      "note": "manhwa",
+      "module": "read-flame"
+    },
+    {
+      "id": "read-hive",
+      "label": "Hive Scans",
+      "note": "manhwa",
+      "module": "read-hive"
+    },
+    {
+      "id": "read-mangapill",
+      "label": "Mangapill",
+      "note": "manga",
+      "module": "read-mangapill"
+    },
+    {
+      "id": "read-rco",
+      "label": "ReadComicsOnline",
+      "note": "western comics",
+      "module": "read-rco"
+    },
+    {
+      "id": "read-novelfull",
+      "label": "NovelFull",
+      "note": "light novels",
+      "module": "read-novelfull"
+    },
+    {
+      "id": "read-novelbuddy",
+      "label": "NovelBuddy",
+      "note": "light & web novels",
+      "module": "read-novelbuddy"
+    }
+  ],
+  "audio": [
+    {
+      "id": "audio-radio",
+      "label": "Radio Browser",
+      "note": "radio stations",
+      "module": "audio-radio"
+    },
+    {
+      "id": "audio-jiosaavn",
+      "label": "JioSaavn",
+      "note": "music · 320 kbps",
+      "module": "audio-jiosaavn"
+    }
+  ],
+  "drama": [
+    {
+      "id": "drama-dramafren",
+      "platform": "dramafren",
+      "label": "DramaFren",
+      "module": "dramafren",
+      "note": "Chinese short dramas; often full-series compilations with English subtitles"
+    },
+    {
+      "id": "drama-dramabox",
+      "platform": "dramabox",
+      "label": "DramaBox",
+      "module": "dramafren",
+      "note": "short series · multilingual"
+    },
+    {
+      "id": "drama-dramawave",
+      "platform": "dramawave",
+      "label": "DramaWave",
+      "module": "dramafren",
+      "note": "short series · multilingual"
+    },
+    {
+      "id": "drama-goodshort",
+      "platform": "goodshort",
+      "label": "GoodShort",
+      "module": "dramafren",
+      "note": "Server 2 verified; server 1 proxy challenged when checked 2026-11-01"
+    },
+    {
+      "id": "drama-netshort",
+      "platform": "netshort",
+      "label": "NetShort",
+      "module": "dramafren",
+      "note": "short series · multilingual"
+    },
+    {
+      "id": "drama-flickreels",
+      "platform": "flickreels",
+      "label": "FlickReels",
+      "module": "dramafren",
+      "note": "Catalog and API working; sampled video CDN returned HTTP 403 on 2026-11-01"
+    },
+    {
+      "id": "drama-stardusttv",
+      "platform": "stardusttv",
+      "label": "StarDustTV",
+      "module": "dramafren",
+      "note": "short series · multilingual"
+    },
+    {
+      "id": "drama-radreel",
+      "platform": "radreel",
+      "label": "RadReel",
+      "module": "dramafren",
+      "note": "Linked by DramaFren; DNS unavailable when checked 2026-11-01",
+      "unavailable": true
+    }
+  ]
+}
