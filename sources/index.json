@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "version": "2026.11.1.8",
+  "version": "2026.11.5.2",
   "minApp": "1.2.21",
   "modules": {
     "videasy": {
       "file": "modules/videasy.mjs",
-      "version": "1.1.0",
+      "version": "1.1.3",
       "config": {
         "apis": [
           {
@@ -55,7 +55,7 @@
     },
     "vidcore": {
       "file": "modules/vidcore.mjs",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "config": {
         "api": "https://vidrack.created.app",
         "referer": "https://vidcore.org/"
@@ -95,7 +95,7 @@
     },
     "kaa": {
       "file": "modules/kaa.mjs",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "config": {
         "base": "https://kaa.lt"
       }
@@ -111,7 +111,7 @@
     },
     "vega": {
       "file": "modules/vega.mjs",
-      "version": "1.2.0",
+      "version": "1.2.2",
       "config": {
         "pixeldrain": "https://pixeldrain.dev"
       }
@@ -123,17 +123,18 @@
     },
     "live-streamfree": {
       "file": "modules/live-streamfree.mjs",
-      "version": "1.1.0",
+      "version": "1.1.3",
       "config": {
         "base": "https://streamfree.top",
         "mirrors": [
+          "https://strmfree.pk",
           "https://strmfree.st"
         ]
       }
     },
     "live-sportsindx": {
       "file": "modules/live-sportsindx.mjs",
-      "version": "1.1.0",
+      "version": "1.1.2",
       "config": {
         "base": "https://sportsindx.st"
       }
@@ -208,7 +209,7 @@
     },
     "live-timstreams": {
       "file": "modules/live-timstreams.mjs",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "config": {
         "base": "https://tim-streams.com",
         "genres": {
@@ -296,7 +297,7 @@
     },
     "audio-jiosaavn": {
       "file": "modules/audio-jiosaavn.mjs",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "config": {
         "SAAVN_API": "https://www.jiosaavn.com/api.php?_format=json&_marker=0&api_version=4"
       }
@@ -305,12 +306,73 @@
       "file": "modules/dramafren.mjs",
       "version": "1.1.0",
       "config": {}
+    },
+    "kissasian": {
+      "file": "modules/kissasian.mjs",
+      "version": "1.2.0",
+      "config": {
+        "base": "https://kissasian.com.gr",
+        "playerHosts": [
+          "catalog.dramavibe.cfd"
+        ],
+        "subtitleHosts": [
+          "storage.dramavibe.cfd"
+        ],
+        "country": "south-korea",
+        "anyCountry": true
+      }
+    },
+    "games-astralgames": {
+      "file": "modules/games-astralgames.mjs",
+      "version": "1.1.0"
+    },
+    "games-gamebounty": {
+      "file": "modules/games-gamebounty.mjs",
+      "version": "1.1.0"
+    },
+    "games-gogrevived": {
+      "file": "modules/games-gogrevived.mjs",
+      "version": "1.1.0"
+    },
+    "games-ankergames": {
+      "file": "modules/games-ankergames.mjs",
+      "version": "1.1.1"
+    },
+    "games-fitgirl": {
+      "file": "modules/games-fitgirl.mjs",
+      "version": "1.0.0"
+    },
+    "games-m4ckd0ge": {
+      "file": "modules/games-m4ckd0ge.mjs",
+      "version": "1.0.0"
+    },
+    "hianime": {
+      "file": "modules/hianime.mjs",
+      "version": "1.0.2",
+      "config": {
+        "base": "https://hianime.at",
+        "embed": "https://zokoanime.video"
+      }
+    },
+    "zokoanime": {
+      "file": "modules/zokoanime.mjs",
+      "version": "1.0.2",
+      "config": {
+        "embed": "https://zokoanime.video"
+      }
+    },
+    "katdrama": {
+      "file": "modules/katdrama.mjs",
+      "version": "1.0.1",
+      "config": {
+        "base": "https://k-drama.in"
+      }
     }
   },
   "sources": [
     {
       "id": "videasy-yoru",
-      "label": "Yoru",
+      "label": "Kyoto",
       "kind": "hls",
       "note": "4K · subtitles",
       "subtitles": true,
@@ -321,18 +383,18 @@
     },
     {
       "id": "vidcore-movy",
-      "label": "Movy",
+      "label": "Osaka",
       "kind": "hls",
       "note": "4K · fast",
       "module": "vidcore",
       "params": {
-        "upstream": "lfmx"
+        "upstream": "movy"
       },
-      "resolveTimeoutMs": 45000
+      "resolveTimeoutMs": 150000
     },
     {
       "id": "vidcore-cineplay",
-      "label": "Cineplay",
+      "label": "Nara",
       "kind": "hls",
       "note": "1080p",
       "module": "vidcore",
@@ -343,7 +405,7 @@
     },
     {
       "id": "videasy-breach",
-      "label": "Breach",
+      "label": "Sapporo",
       "kind": "hls",
       "note": "auto quality",
       "subtitles": true,
@@ -352,7 +414,7 @@
     },
     {
       "id": "videasy-vyse",
-      "label": "Vyse",
+      "label": "Fukuoka",
       "kind": "hls",
       "note": "Hindi + English audio",
       "subtitles": true,
@@ -364,7 +426,7 @@
     },
     {
       "id": "vidcore-nova",
-      "label": "Nova",
+      "label": "Kobe",
       "kind": "hls",
       "note": "1080p · alt CDN",
       "module": "vidcore",
@@ -376,7 +438,7 @@
     },
     {
       "id": "wing",
-      "label": "Cinejoy",
+      "label": "Nagoya",
       "kind": "hls",
       "note": "1080p · multi-server",
       "module": "wing",
@@ -385,7 +447,7 @@
     },
     {
       "id": "nepu",
-      "label": "Nepu",
+      "label": "Yokohama",
       "kind": "hls",
       "note": "movies & shows · needs app",
       "resolveTimeoutMs": 60000,
@@ -393,7 +455,7 @@
     },
     {
       "id": "piratexplay",
-      "label": "PirateXPlay",
+      "label": "Hakone",
       "kind": "hls",
       "note": "Hindi, Tamil, Telugu · desktop app",
       "dualAudio": true,
@@ -403,7 +465,7 @@
     },
     {
       "id": "supercartoons",
-      "label": "SuperCartoons",
+      "label": "Nikko",
       "kind": "hls",
       "note": "classic cartoons",
       "types": [
@@ -417,7 +479,7 @@
     },
     {
       "id": "toonjet",
-      "label": "ToonJet",
+      "label": "Kamakura",
       "kind": "hls",
       "note": "classic cartoons",
       "types": [
@@ -431,7 +493,7 @@
     },
     {
       "id": "archive-cartoons",
-      "label": "Archive.org",
+      "label": "Kanazawa",
       "kind": "hls",
       "note": "public-domain cartoons",
       "types": [
@@ -445,7 +507,7 @@
     },
     {
       "id": "kaa",
-      "label": "KickAssAnime",
+      "label": "Tokyo",
       "kind": "hls",
       "note": "sub & dub · subtitles",
       "subtitles": true,
@@ -453,8 +515,26 @@
       "module": "kaa"
     },
     {
+      "id": "hianime",
+      "label": "Takayama",
+      "kind": "hls",
+      "note": "anime · sub & dub · 1080p",
+      "subtitles": true,
+      "scope": "anime",
+      "module": "hianime"
+    },
+    {
+      "id": "zokoanime",
+      "label": "Hiroshima",
+      "kind": "hls",
+      "note": "anime · sub & dub · fast",
+      "subtitles": true,
+      "scope": "anime",
+      "module": "zokoanime"
+    },
+    {
       "id": "animeparadise",
-      "label": "AnimeParadise",
+      "label": "Nagasaki",
       "kind": "hls",
       "note": "anime · multi-quality",
       "subtitles": true,
@@ -464,7 +544,7 @@
     },
     {
       "id": "vega",
-      "label": "VegaMovies",
+      "label": "Sendai",
       "kind": "hls",
       "note": "Hindi · dual audio · direct links",
       "dualAudio": true,
@@ -484,7 +564,7 @@
     },
     {
       "id": "vega-mirror",
-      "label": "Vega Mirror",
+      "label": "Matsumoto",
       "kind": "hls",
       "note": "Hindi · dual audio · no verification",
       "dualAudio": true,
@@ -503,7 +583,7 @@
     },
     {
       "id": "drive",
-      "label": "MoviesDrive",
+      "label": "Naha",
       "kind": "hls",
       "note": "Hindi · Prime/series coverage",
       "scope": "bollywood",
@@ -521,9 +601,9 @@
     },
     {
       "id": "lux",
-      "label": "RogMovies",
+      "label": "Beppu",
       "kind": "hls",
-      "note": "Hindi · Vega-family mirror",
+      "note": "Hindi · mirror",
       "scope": "bollywood",
       "resolveTimeoutMs": 60000,
       "module": "vega",
@@ -539,7 +619,7 @@
     },
     {
       "id": "embed-vidlink",
-      "label": "VidLink",
+      "label": "Otaru",
       "kind": "embed",
       "note": "backup player · resumes where you left off",
       "embed": {
@@ -562,7 +642,7 @@
     },
     {
       "id": "embed-vidrock",
-      "label": "Vidrock",
+      "label": "Himeji",
       "kind": "embed",
       "note": "backup player",
       "embed": {
@@ -572,7 +652,7 @@
     },
     {
       "id": "embed-2embed",
-      "label": "2Embed",
+      "label": "Kumamoto",
       "kind": "embed",
       "note": "backup player · multi-server",
       "embed": {
@@ -582,27 +662,57 @@
     },
     {
       "id": "vidsrc",
-      "label": "VidSrc",
+      "label": "Karuizawa",
       "kind": "embed",
       "note": "backup player · may need VPN",
       "needsVpn": true,
       "module": "vidsrc",
       "embed": {}
+    },
+    {
+      "id": "kissasian",
+      "label": "Shirakawa",
+      "kind": "hls",
+      "note": "Asian drama · subtitles",
+      "subtitles": true,
+      "scope": "kdrama",
+      "resolveTimeoutMs": 45000,
+      "module": "kissasian"
+    },
+    {
+      "id": "katdrama",
+      "label": "Akita",
+      "kind": "hls",
+      "note": "Asian drama · subtitles · finds shows by ID",
+      "subtitles": true,
+      "scope": "kdrama",
+      "module": "katdrama"
     }
   ],
   "files": {
     "modules/animeparadise.mjs": "3db747e359758b10de1b0e5e3165b7881fa1530719e993e42ffd8748fd56aa95",
-    "modules/audio-jiosaavn.mjs": "5bd247846bc1bc0509b0a99bc3c4ebab4a4f37727148b93170af9459e297674d",
+    "modules/audio-jiosaavn.mjs": "98e0982f68b5ca136b2b5dc858c211de65172ce7a21dbaa7c9e5735cf8f2fe49",
     "modules/audio-radio.mjs": "fa5bd058b22fffb290b7ce9d0ab259e1a72d98443c8ba0e782bbb347e151df3c",
     "modules/cartoons.mjs": "e0aee790c83080ee779b66e4335cc081773f1b3a7b4b58fb75768b45fb390107",
     "modules/dramafren.mjs": "6616466a7a8e53c2b5283fb8f87cd8147a003b3496277b7febdce5100855c3dd",
-    "modules/kaa.mjs": "3f2316a99caea0378311a653acd9adb89b395f120b9f25902d7720384060e814",
-    "modules/live-media.mjs": "5abe4e73ec9990a9f6f23841945d231632fee21cfe67a1ad632cc4a9104fb89e",
+    "modules/games-ankergames.mjs": "6569d699e07208fa38e701df15ba1747887b64d15f123c49c6c5b80f1ba02db1",
+    "modules/games-astralgames.mjs": "2522836ae106d40feb5ae607778b68c26dd66f6c97ae79cdd56ca996689c81ee",
+    "modules/games-browser.mjs": "179736e7fcc656c1d3fff321daa41cb59db744440630ffd062bd943603526654",
+    "modules/games-core.mjs": "e0362633d65e496b6c7f3369ae1f292cf1e5e87677954d4c6b163de334962c38",
+    "modules/games-fitgirl.mjs": "78c8f040a981ba737119f7f867b985e33065e82b520a2d010d8afd8c26aa55b0",
+    "modules/games-gamebounty.mjs": "d3e4130bef12b0215eee04e2067d0bc7e3ee0660f4bb1be091124299bac7ef9c",
+    "modules/games-gogrevived.mjs": "1463369daaae40ff8d1bc12d4658479495f4214b91b939468bcacdf697555f0c",
+    "modules/games-m4ckd0ge.mjs": "875c28cf8777f1c837540d632d9b2886d10dce794fdb97558c0d8ffc9bb15490",
+    "modules/hianime.mjs": "1ab2eea16660a23cebc95d9cfc73dedfed673883b6c6848df3b60af113147ce7",
+    "modules/kaa.mjs": "8c048d954206d7da33ab19fdc54090df9105beae3682c580a0a474a8136fbe21",
+    "modules/katdrama.mjs": "6e8f37b53a4b55b066c776a2f5fdf09e21b6e4aa85992a371b7ec16bb6a9d7e9",
+    "modules/kissasian.mjs": "952cd035e9ea96114862159b83c3f38044c959d7f1dfe9436beba053315b9d3d",
+    "modules/live-media.mjs": "df8c97744a6762de05b708914bbf2d65bc06e89d8ee14ce57535d9c1ef894e8f",
     "modules/live-pluto.mjs": "49129797e153443b9b84ccaf8e574cf8cd1ef8329998e37a63801c53ae13de04",
     "modules/live-scores.mjs": "b0b3c75ab7fb0b53f28e42596b196812a66be7a74e24758d1142df078185f230",
-    "modules/live-sportsindx.mjs": "39f76bf8edc7c0cca3f48b34c27535e5b0657367f6d84b9b0356ff4bfba57dd7",
-    "modules/live-streamfree.mjs": "36620ca9c3295306b66dd88002efb3456e3155185dfd16a0c1d7dbcc265a12af",
-    "modules/live-timstreams.mjs": "257b9903070b2fb7e13de42ad93d26fcab108323b09143d8f9cd365f466777b5",
+    "modules/live-sportsindx.mjs": "a4c0207b9b1379e119ebab5e1e82328291c6b232217a30709192c9aa9381afbd",
+    "modules/live-streamfree.mjs": "79b8cac36078212d7a2c73fae6a0a344865028d3a25432cb1047a1dd7f3e8bc7",
+    "modules/live-timstreams.mjs": "90069c02b7884045f76144b1b205d0cbd9c7f1fc145e238639196383eb57093d",
     "modules/nepu.mjs": "d3b4ec38a2112c39c010d7983530eb00736870434913be596632ed6441394ef1",
     "modules/piratexplay.mjs": "9920721bf02899c46decc0694ac2a9dd069659e155cb3e8b4bcea63180b71c99",
     "modules/read-asura.mjs": "c5028cfb30f12f818f0e2dc2acc104f9205d01b5e7d23c133eaa30e0eafb46ad",
@@ -615,12 +725,13 @@
     "modules/read-novelfull.mjs": "60739e2f655de2f8ce847b8dcad729a82730b523220b4361f00e1e9549533ac1",
     "modules/read-rco.mjs": "5256845a0eb4c22bf156bc078f45a807b83096c74f7168933aa8e92205d1248a",
     "modules/vega-domains.mjs": "71ab7c377bde7585867262c516efb873970228295934e3efacc197a0ed1509f3",
-    "modules/vega.mjs": "ae5042ff9d22a923172cd99b7542f67f50ab04a6e24aee9a7e1526e90f75cf3b",
-    "modules/vidcore.mjs": "fd48b8ab2ddf68a4b02f9b88d02892ee442f2e138a0917550eea448b7751eb13",
-    "modules/videasy.mjs": "4e354a7f90a348daf15145d30fb3e684cb1215174f430caaba2c268f02940fcf",
+    "modules/vega.mjs": "9e00513190cdad6eba00032d8e606f0fe1412cc3717d430704d78b784367de8b",
+    "modules/vidcore.mjs": "c5aed40afa2f6c14123ea19a824be0232c09b4cd5171d694438abbc273698a8b",
+    "modules/videasy.mjs": "ca0bc6aa637c64b615f4c1c36d8c4875d450fb94618c00c9491a510c89ae62c2",
     "modules/vidsrc.mjs": "3f0fe46b3387280e77020bf8ace01992376834ad49d645aeeb88e240bfbf4263",
     "modules/wing-crush.wasm": "40c923580779e2a850fc5ab3f0046be565ed717883cf4547ed3a87de2450bdcf",
-    "modules/wing.mjs": "f1ffb2a0f52011617b0a67b0d93e35c5cc956334299881d7dcf8875876a99614"
+    "modules/wing.mjs": "f1ffb2a0f52011617b0a67b0d93e35c5cc956334299881d7dcf8875876a99614",
+    "modules/zokoanime.mjs": "9ac255500f0ce731fd1018f7d49b5918bb4e9940309584224db5d0dc48a0812d"
   },
   "live": [
     {
@@ -781,6 +892,79 @@
       "module": "dramafren",
       "note": "Linked by DramaFren; DNS unavailable when checked 2026-11-01",
       "unavailable": true
+    }
+  ],
+  "kdrama": [
+    {
+      "id": "kdrama-kissasian",
+      "platform": "kissasian",
+      "label": "KissAsian",
+      "module": "kissasian",
+      "note": "Korean dramas · English subtitles · native HLS player"
+    }
+  ],
+  "games": [
+    {
+      "id": "games-astralgames",
+      "provider": "astralgames",
+      "label": "AstralGames",
+      "module": "games-astralgames",
+      "directOnly": false,
+      "browserAssisted": true,
+      "note": "Direct ZIP downloads · build and Online-Fix metadata",
+      "supportsTorrents": true
+    },
+    {
+      "id": "games-gamebounty",
+      "provider": "gamebounty",
+      "label": "GameBounty",
+      "module": "games-gamebounty",
+      "directOnly": false,
+      "browserAssisted": true,
+      "note": "Pre-installed games · multiple direct-download mirrors",
+      "supportsTorrents": true
+    },
+    {
+      "id": "games-gogrevived",
+      "provider": "gogrevived",
+      "label": "GOG Revived",
+      "module": "games-gogrevived",
+      "directOnly": false,
+      "browserAssisted": true,
+      "note": "GOG installers · direct mirrors and magnets",
+      "supportsTorrents": true
+    },
+    {
+      "id": "games-ankergames",
+      "provider": "ankergames",
+      "label": "AnkerGames",
+      "module": "games-ankergames",
+      "directOnly": true,
+      "browserAssisted": true,
+      "note": "Pre-installed games · direct downloads · desktop verification",
+      "supportsTorrents": false
+    },
+    {
+      "id": "games-fitgirl",
+      "provider": "fitgirl",
+      "label": "FitGirl Repacks",
+      "module": "games-fitgirl",
+      "directOnly": false,
+      "supportsTorrents": true,
+      "browserAssisted": true,
+      "releaseType": "repack",
+      "note": "Compressed repacks · multipart direct mirrors and magnets"
+    },
+    {
+      "id": "games-m4ckd0ge",
+      "provider": "m4ckd0ge",
+      "label": "M4CKD0GE Repacks",
+      "module": "games-m4ckd0ge",
+      "directOnly": false,
+      "supportsTorrents": true,
+      "browserAssisted": false,
+      "releaseType": "repack",
+      "note": "Compressed repacks · direct mirrors · included-fix labels"
     }
   ]
 }

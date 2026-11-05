@@ -146,25 +146,31 @@ async function resolveMatch(slug) {
   if (!links.length) throw new Error("No stream sources available for this match");
 
   const streamfreeLinks = links.filter(
-    (l) => /streamfree\.top|strmfree\.st/i.test(l.embedUrl) && l.embedUrl.includes("/embed/")
+    (l) => /streamfree\.top|strmfree\.st|strmfree\.pk/i.test(l.embedUrl) && l.embedUrl.includes("/embed/")
   );
-  for (const streamfreeLink of streamfreeLinks) {
-    try {
-      const resolved = await sf().resolveEmbed(streamfreeLink.embedUrl, `${SPORTSINDX_BASE}/match/${slug}`);
-      return await verified({ ...resolved, type: "hls", allLinks: links });
-    } catch {}
-  }
+  // All feeds are tried at once and the first that plays wins: the quickest feed starts the match,
+  // and a dead one no longer holds up the rest.
+  // Verified feeds race first, then the rest only if none of them plays.
+  const firstPlaying = async (list, attempt) => {
+    for (const group of [list.filter((l) => l.status === 'Verified'), list.filter((l) => l.status !== 'Verified')]) {
+      if (!group.length) continue;
+      const won = await Promise.any(group.map(attempt)).catch(() => null);
+      if (won) return won;
+    }
+    return null;
+  };
+  const viaStreamFree = await firstPlaying(streamfreeLinks, async (l) =>
+    verified({ ...(await sf().resolveEmbed(l.embedUrl, `${SPORTSINDX_BASE}/match/${slug}`)), type: "hls", allLinks: links }));
+  if (viaStreamFree) return viaStreamFree;
 
   // Resolve wrapper/obfuscated embeds to HLS on the server. This avoids black
   // frames caused by provider DNS, TLS, referrer, and iframe restrictions.
-  for (const link of links.slice(0, 6)) {
-    try {
-      const resolved = await resolveEmbeddedSportsHls(link.embedUrl, `${SPORTSINDX_BASE}/match/${slug}`);
-      if (resolved) {
-        return await verified({ ...resolved, type: "hls", quality: link.quality || "HD", provider: link.name || link.provider, allLinks: links });
-      }
-    } catch {}
-  }
+  const embedded = await firstPlaying(links.slice(0, 6), async (link) => {
+    const resolved = await resolveEmbeddedSportsHls(link.embedUrl, `${SPORTSINDX_BASE}/match/${slug}`);
+    if (!resolved) throw new Error("no stream");
+    return verified({ ...resolved, type: "hls", quality: link.quality || "HD", provider: link.name || link.provider, allLinks: links });
+  });
+  if (embedded) return embedded;
 
   // Players that only reveal their stream when run: the desktop app plays them for a moment.
   // Outside it, or if none answers, fall to the iframe below only when there's no bridge at all.
@@ -239,7 +245,7 @@ async function resolveFeed({ slug, link }) {
   if (!chosen) throw new Error("That stream is no longer listed");
   if (/vip|premium|paid/i.test(chosen.status || '')) throw new Error('This feed requires a provider subscription');
   const referer = `${SPORTSINDX_BASE}/match/${slug}`;
-  if (/streamfree\.top|strmfree\.st/i.test(chosen.embedUrl) && chosen.embedUrl.includes("/embed/")) {
+  if (/streamfree\.top|strmfree\.st|strmfree\.pk/i.test(chosen.embedUrl) && chosen.embedUrl.includes("/embed/")) {
     try {
       return await verified({ ...(await sf().resolveEmbed(chosen.embedUrl, referer)), type: "hls" });
     } catch { /* fall through to the generic path */ }

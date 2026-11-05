@@ -55,7 +55,11 @@ function vegaScore(query, candidate) {
   if (!qw.size || !cw.size) return 0;
   let hit = 0;
   for (const w of qw) if (cw.has(w)) hit++;
-  return hit / Math.max(qw.size, cw.size);
+  const overlap = hit / Math.max(qw.size, cw.size);
+  // The post's name begins with the whole title and then adds a subtitle ("Stree 2: Sarkate Ka
+  // Aatank" for "Stree 2"): that's the title, however long the subtitle.
+  const q = cartoonNorm(query).trim(), c = cartoonNorm(candidate).trim();
+  return q && c.startsWith(q + " ") ? Math.max(overlap, 0.8) : overlap;
 }
 
 // MKV CodecID strings and mp4 sample-entry fourccs for audio Chromium decodes
@@ -163,6 +167,9 @@ async function vegaSearchHtml(query, base) {
 function vegaCleanTitle(raw) {
   let t = String(raw || "").replace(/^download\s+/i, "");
   const year = (t.match(/\b(19|20)\d{2}\b/) || [])[0];
+  // Newer posts run on into sizes and formats ("Full Movie WeB-DL 480p [350MB] | 720p…"):
+  // the name ends where those begin, or they drown it out when compared.
+  t = t.replace(/\s(?:\||\[|\{).*$/, " ").replace(/\b(?:full\s*movie|\d{3,4}p)\b.*$/i, " ");
   t = t
     .replace(/\b(19|20)\d{2}\b/, " ")
     .replace(/\b(season\s*\d+|s\d{1,2}\b|all\s*seasons?|complete|hindi|english|dual\s*audio|multi\s*audio|web-?dl|webrip|hdrip|bluray|bdrip|brrip|hdts|hdtc|camrip|dvdrip|pre-?dvd|hevc|x26[45]|10-?bit|\d{3,4}p|4k|mkv|mp4|esubs?|with\s*subtitles?|amzn|prime\s*video|netflix|jio\s*hotstar|hotstar|zee5|sony\s*liv|mx\s*player|apple\s*tv\+?|full\s*movie|full\s*series|web\s*series|all\s*episodes?|added|uncut|unrated|extended|imax|ddp?\d[\d.]*|aac|atmos|esub)\b/gi, " ")

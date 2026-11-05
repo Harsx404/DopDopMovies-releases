@@ -250,23 +250,35 @@ export async function musicFind(q) {
 
 /** Hi-Res: find the same recording on JioSaavn (320kbps) for a YouTube Music track. */
 const hiresNorm = (s) => String(s || "").toLowerCase().replace(/\(.*?\)|\[.*?\]/g, " ").replace(/\b(feat|ft|from|official|audio|video|lyrical|remastered)\b.*$/i, " ").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+// What makes two songs of one name different recordings. Compared whole, so "Alfaaz" never takes "Alfaaz (Female Version)".
+const VERSION_WORDS = /\b(remix|reprise|lo ?fi|slowed|reverb|sped up|speed up|nightcore|unplugged|acoustic|live|cover|instrumental|karaoke|vocals|mashup|recreated|rework|revisited|female|male|duet|club|extended|edit|8d|bass boosted|piano|guitar|flute)\b/g;
+function versionTags(title) {
+  const plain = String(title || "").toLowerCase().replace(/[(\[]\s*from\b.*?[)\]]/g, " ").replace(/[^\p{L}\p{N}]+/gu, " ");
+  return [...new Set((plain.match(VERSION_WORDS) || []).map((w) => w.replace(" ", "")))].sort().join(",");
+}
+const artistNames = (s) => new Set(String(s || "").split(/,|&|and|x|feat\.?|ft\.?/i).map(hiresNorm).filter(Boolean));
+// Further apart than this in length, it isn't the same recording however well the names match.
+const HIRES_MAX_LENGTH_GAP = 12;
+
 export async function musicHiRes(title, artist, duration) {
   const t = hiresNorm(title);
-  const rawT = String(title).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-  const a = new Set(hiresNorm(artist).split(" ").filter((w) => w.length > 1));
+  const a = artistNames(artist);
   if (!t) return { track: null };
   const found = await saavnCall("search.getResults", { q: `${title} ${artist}`.trim(), n: "15", p: "1" });
   const cands = (await saavnTracks(found.results)).filter((s) => s.url);
   let best = null, bestScore = 0;
+  const version = versionTags(title);
   for (const s of cands) {
+    if (versionTags(s.title) !== version) continue;
+    if (duration && s.duration && Math.abs(s.duration - duration) > HIRES_MAX_LENGTH_GAP) continue;
     const st = hiresNorm(s.title);
     let score = st === t ? 3 : st.includes(t) || t.includes(st) ? 1.5 : 0;
     if (!score) continue;
-    const sa = hiresNorm(s.artist).split(" ");
-    const shared = sa.some((w) => a.has(w));
-    if (a.size) score += shared ? 2 : -1.5;
-    // Different artist AND the full title (bracketed bits included) differs → another recording / cover.
-    if (a.size && !shared && rawT !== String(s.title).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()) continue;
+    // Many songs share a name, so a full artist name has to match: a shared surname proves nothing.
+    if (a.size) {
+      if (![...artistNames(s.artist)].some((n) => a.has(n))) continue;
+      score += 2;
+    }
     if (duration && s.duration) {
       const d = Math.abs(s.duration - duration);
       score += d <= 3 ? 2 : d <= 8 ? 1 : d > 25 ? -2 : 0;

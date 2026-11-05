@@ -53,8 +53,13 @@ export function resolve({ id, option = 0, fresh = false }) {
   const cached = resolved.get(key);
   if (!fresh && cached?.expires > Date.now()) return Promise.resolve(cached.value);
   if (pending.has(key)) return pending.get(key);
-  const work = resolveChannel({ id, option }).then(value => {
-    resolved.set(key, { value, expires: Date.now() + 5 * 60_000 });
+  // Getting a link means loading the host's whole player. An older link is usually still good,
+  // and checking it takes a moment; only a dead one costs the full trip.
+  const recheck = !fresh && cached?.usableUntil > Date.now()
+    ? verifyLiveHls(cached.value, { fetch: smartFetch || dnsFetch, fetchStream: dnsFetchStream, userAgent: UA })
+    : Promise.reject();
+  const work = recheck.catch(() => resolveChannel({ id, option })).then(value => {
+    resolved.set(key, { value, expires: Date.now() + 5 * 60_000, usableUntil: Date.now() + 30 * 60_000 });
     return value;
   }).finally(() => pending.delete(key));
   pending.set(key, work);

@@ -186,7 +186,7 @@ async function resolveKaa(title, type, season, episode, tmdbId, animeLang) {
         }
       }
 
-      out.push({ quality: `auto${dubSuffix} · ${srv.name || "server"}`, url: kaaProxied(manifest, playerUrl), type: "hls", lang: tag });
+      out.push({ quality: `auto${dubSuffix}`, url: kaaProxied(manifest, playerUrl), type: "hls", lang: tag });
 
       // Enumerate renditions from the master playlist for the quality picker.
       try {
@@ -203,7 +203,7 @@ async function resolveKaa(title, type, season, episode, tmdbId, animeLang) {
             // EXT-X-MEDIA group. Serve the filtered master so every quality
             // keeps its audio track.
             out.push({
-              quality: `${res[1]}p${dubSuffix} · ${srv.name || "server"}`,
+              quality: `${res[1]}p${dubSuffix}`,
               url: `${kaaProxied(manifest, playerUrl)}&pick=${res[1]}`,
               type: "hls",
               lang: tag,

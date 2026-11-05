@@ -4,10 +4,10 @@
 // with the app runtime and this module's config from index.json; resolve()
 // runs per play. Hosts and endpoints live in index.json, not here.
 
-let UA, dnsFetch, getHeadersForHost, resolveUrl, VIDEASY_APIS, VIDEASY_ENDPOINTS, VIDEASY_CITIES, VIDZEN_API, VIDZEN_REFERER;
+let UA, dnsFetch, dnsFetchStream, getHeadersForHost, resolveUrl, VIDEASY_APIS, VIDEASY_ENDPOINTS, VIDEASY_CITIES, VIDZEN_API, VIDZEN_REFERER;
 
 export function setup(rt, config) {
-  ({ UA, dnsFetch, getHeadersForHost, resolveUrl } = rt);
+  ({ UA, dnsFetch, dnsFetchStream, getHeadersForHost, resolveUrl } = rt);
   // apis: tried in order. "city" = /<city>/sources (current vidy.st backend),
   // "legacy" = <endpoint>/sources-with-title (old speedracelight backend).
   VIDEASY_APIS = config.apis;
@@ -17,6 +17,19 @@ export function setup(rt, config) {
   VIDEASY_CITIES = config.cities;
   VIDZEN_API = config.vidzen.api;
   VIDZEN_REFERER = config.vidzen.referer;
+}
+
+// A stream counts as playing when its first segment answers. Only the first kilobyte is read:
+// a whole segment is megabytes, and the check was waiting for all of it.
+async function firstBytes(url, headers) {
+  const options = { headers: { ...headers, Range: "bytes=0-1023" } };
+  if (!dnsFetchStream) { const r = await dnsFetch(url, options); return r.ok; }
+  const r = await dnsFetchStream(url, options);
+  try {
+    if (r.statusCode < 200 || r.statusCode >= 300) return false;
+    for await (const chunk of r.stream) if (chunk.length) return true;
+    return false;
+  } finally { r.stream.destroy(); }
 }
 
 // --- Videasy decryption functions ---
@@ -85,8 +98,7 @@ async function resolveVidZen(tmdbId, type, season, episode) {
     const segLine = st.split("\n").map((l) => l.trim()).find((l) => l && !l.startsWith("#"));
     if (segLine) {
       try {
-        const segRes = await dnsFetch(resolveUrl(first, segLine), { headers: getHeadersForHost(host) });
-        if (!segRes.ok) valid = false;
+        if (!(await firstBytes(resolveUrl(first, segLine), getHeadersForHost(host)))) valid = false;
       } catch { valid = false; }
     }
   }
@@ -126,15 +138,42 @@ async function resolveVideasy(provider, tmdbId, type, season, episode) {
   throw lastErr;
 }
 
+// Yoru, Vyse and Breach ask the same service, which limits how often it's asked. They share a
+// title's seed for a little while, and after "too many requests" leave it alone for a few minutes
+// (playback goes to the fallback meanwhile) instead of asking again on every play.
+const SEED_TTL_MS = 2 * 60_000;
+const LIMIT_PAUSE_MS = 5 * 60_000;
+const seeds = new Map();
+const limitedUntil = new Map();
+async function seedFor(base, tmdbId, fresh = false) {
+  if ((limitedUntil.get(base.api) ?? 0) > Date.now()) throw new Error("rate limited");
+  const key = `${base.api}|${tmdbId}`;
+  const hit = seeds.get(key);
+  if (!fresh && hit && Date.now() - hit.at < SEED_TTL_MS) return hit.seed;
+  const pending = dnsFetch(`${base.api}/seed?mediaId=${tmdbId}`, {
+    headers: { "User-Agent": UA, Referer: base.referer, Origin: base.origin, Accept: "application/json" },
+  }).then(async (r) => {
+    if (r.status === 429) { limitedUntil.set(base.api, Date.now() + LIMIT_PAUSE_MS); throw new Error("rate limited"); }
+    const seed = JSON.parse(await r.text()).seed;
+    if (!seed) throw new Error("no seed");
+    return seed;
+  });
+  seeds.set(key, { at: Date.now(), seed: pending });
+  pending.catch(() => { if (seeds.get(key)?.seed === pending) seeds.delete(key); });
+  if (seeds.size > 300) seeds.delete(seeds.keys().next().value);
+  return pending;
+}
+
 async function resolveVideasyVia(base, provider, tmdbId, type, season, episode) {
   const endpoints = base.fmt === "city"
     ? (VIDEASY_CITIES[provider] || VIDEASY_CITIES["videasy-yoru"]).map((c) => `${c}/sources`)
     : [VIDEASY_ENDPOINTS.legacy[provider] || "cdn/sources-with-title"];
 
-  // Get TMDB metadata for title/year/imdbId
-  const metaR = await dnsFetch(`${base.db}/3/${type}/${tmdbId}?api_key=test`, {
-    headers: { "User-Agent": UA, Referer: base.referer },
-  });
+  // Title details and the seed don't depend on each other: ask for both at once.
+  const [metaR, firstSeed] = await Promise.all([
+    dnsFetch(`${base.db}/3/${type}/${tmdbId}?api_key=test`, { headers: { "User-Agent": UA, Referer: base.referer } }),
+    seedFor(base, tmdbId),
+  ]);
   let title = "Unknown", year = "2000", imdbId = "", totalSeasons = "";
   if (metaR.ok) {
     const meta = JSON.parse(await metaR.text());
@@ -144,11 +183,7 @@ async function resolveVideasyVia(base, provider, tmdbId, type, season, episode) 
     totalSeasons = meta.number_of_seasons ? String(meta.number_of_seasons) : "";
   }
 
-  // Get seed
-  const seedFetch = () => dnsFetch(`${base.api}/seed?mediaId=${tmdbId}`, {
-    headers: { "User-Agent": UA, Referer: base.referer, Origin: base.origin, Accept: "application/json" },
-  });
-  let seed = JSON.parse(await (await seedFetch()).text()).seed;
+  let seed = firstSeed;
 
   // The official client encodeURIComponent()s the title before handing it to
   // the params serializer — it goes out double-encoded on the wire.
@@ -172,7 +207,7 @@ async function resolveVideasyVia(base, provider, tmdbId, type, season, episode) 
 
     // Retry with fresh seed on 401/500
     if (r.status === 401 || r.status === 500) {
-      p.set("seed", JSON.parse(await (await seedFetch()).text()).seed);
+      p.set("seed", await seedFor(base, tmdbId, true));
       r = await dnsFetch(`${base.api}/${endpoint}?${p}`, { headers: srcHeaders });
       text = await r.text();
     }
@@ -191,7 +226,7 @@ async function resolveVideasyVia(base, provider, tmdbId, type, season, episode) 
       const mr = await dnsFetch(first, { headers: streamHeaders });
       const mText = await mr.text();
       const segLine = mText.split("\n").map((l) => l.trim()).find((l) => l && !l.startsWith("#"));
-      const segOk = !segLine || (await dnsFetch(resolveUrl(first, segLine), { headers: streamHeaders })).ok;
+      const segOk = !segLine || await firstBytes(resolveUrl(first, segLine), streamHeaders);
       if (!mText.includes("#EXTM3U") || !segOk) throw new Error("bad stream");
     } catch {
       throw new Error(`stream failed playback check (CDN ${firstHost})`);

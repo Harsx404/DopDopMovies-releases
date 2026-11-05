@@ -1,4 +1,16 @@
 // Shared live-feed checks. A playlist alone does not prove that its media plays.
+// GPCDN can serve a session playlist older than its entire live window even
+// with no-cache headers. Only this observed CDN gets an extra query value;
+// signed URLs on other providers must remain byte-for-byte unchanged.
+export function freshLiveUrl(value, live, now = Date.now()) {
+  if (!live) return value;
+  const url = new URL(value);
+  if ((url.hostname === 'gpcdn.net' || url.hostname.endsWith('.gpcdn.net')) && /\.m3u8$/i.test(url.pathname)) {
+    url.searchParams.set('_ddLive', String(now));
+    return url.href;
+  }
+  return value;
+}
 export function transportStreamOffset(bytes) {
   const end = Math.min(bytes.length - 376, 4096);
   for (let i = 0; i < end; i++) {
