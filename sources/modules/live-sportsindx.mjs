@@ -113,15 +113,31 @@ function decodePackedSportsPlayer(html) {
   return values.map((value) => String.fromCharCode((((value ^ xorKey) - subtract + 256) & 255))).join("");
 }
 
+// Players that sign the playlist for the requesting IP must be loaded from this
+// machine; the geo worker is the fallback for hosts the local network blocks.
+async function fetchEmbedPage(embedUrl, referer) {
+  try {
+    const direct = await mediaRuntime.fetch(embedUrl, { headers: { 'User-Agent': mediaRuntime.userAgent, Referer: referer }, signal: AbortSignal.timeout(8000) });
+    if (direct.ok) return direct;
+  } catch { /* blocked or unreachable here */ }
+  return geoProxyFetch(embedUrl, referer);
+}
+
 async function resolveEmbeddedSportsHls(embedUrl, referer, depth = 0) {
   if (depth > 3) return null;
-  const response = await geoProxyFetch(embedUrl, referer);
+  const response = await fetchEmbedPage(embedUrl, referer);
   if (!response.ok) return null;
   const contentType = response.headers.get("content-type") || "";
   if (contentType.includes("mpegurl") || embedUrl.includes(".m3u8")) return { url: embedUrl, referer };
 
   const html = await response.text();
-  const combined = `${html}\n${decodePackedSportsPlayer(html)}`;
+  // Some players hide the playlist as atob('…'), often protocol-relative
+  // (sportspatrika: player.load({source: window.atob('Ly9zdHJl…')})).
+  const decoded = [...html.matchAll(/atob\(\s*["']([A-Za-z0-9+/=]{16,})["']\s*\)/g)]
+    .map((m) => { try { return Buffer.from(m[1], "base64").toString("utf8"); } catch { return ""; } })
+    .filter((s) => /^(https?:)?\/\/[^\s"'<>]+\.m3u8/i.test(s))
+    .map((s) => (s.startsWith("//") ? "https:" + s : s));
+  const combined = `${html}\n${decodePackedSportsPlayer(html)}\n${decoded.join("\n")}`;
   const hls = combined.match(/https?:\/\/[^"'\s<>]+\.m3u8(?:\?[^"'\s<>]*)?/i)?.[0];
   if (hls) return { url: decodeHtmlEntities(hls), referer: embedUrl };
 

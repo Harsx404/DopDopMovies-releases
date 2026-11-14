@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2026.11.14.4",
+  "version": "2026.11.14.7",
   "minApp": "1.2.21",
   "modules": {
     "videasy": {
@@ -134,7 +134,7 @@
     },
     "live-sportsindx": {
       "file": "modules/live-sportsindx.mjs",
-      "version": "1.1.2",
+      "version": "1.1.3",
       "config": {
         "base": "https://sportsindx.st"
       }
@@ -209,7 +209,7 @@
     },
     "live-timstreams": {
       "file": "modules/live-timstreams.mjs",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "config": {
         "base": "https://tim-streams.com",
         "genres": {
@@ -742,10 +742,10 @@
     "modules/kaa.mjs": "8c048d954206d7da33ab19fdc54090df9105beae3682c580a0a474a8136fbe21",
     "modules/katdrama.mjs": "20d65c09c84fd32b3294d6b8266c12f0a6dd6ea51a457f07ed2183b7ee87ab88",
     "modules/kissasian.mjs": "952cd035e9ea96114862159b83c3f38044c959d7f1dfe9436beba053315b9d3d",
-    "modules/live-media.mjs": "df8c97744a6762de05b708914bbf2d65bc06e89d8ee14ce57535d9c1ef894e8f",
+    "modules/live-media.mjs": "3dfe3c09e0d7ebc10ecf36e458c4b9acd4eba7afd1e52b3cebbdb54d93d39cf3",
     "modules/live-pluto.mjs": "49129797e153443b9b84ccaf8e574cf8cd1ef8329998e37a63801c53ae13de04",
     "modules/live-scores.mjs": "b0b3c75ab7fb0b53f28e42596b196812a66be7a74e24758d1142df078185f230",
-    "modules/live-sportsindx.mjs": "a4c0207b9b1379e119ebab5e1e82328291c6b232217a30709192c9aa9381afbd",
+    "modules/live-sportsindx.mjs": "03d77b85a49431efeb366c0b99d5c5f9d57b8c8e5f4ecac9ee15d24a72ca3fc4",
     "modules/live-streamfree.mjs": "79b8cac36078212d7a2c73fae6a0a344865028d3a25432cb1047a1dd7f3e8bc7",
     "modules/live-timstreams.mjs": "90069c02b7884045f76144b1b205d0cbd9c7f1fc145e238639196383eb57093d",
     "modules/nepu.mjs": "d3b4ec38a2112c39c010d7983530eb00736870434913be596632ed6441394ef1",
