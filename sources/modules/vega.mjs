@@ -464,7 +464,154 @@ async function resolveVegaLike({ base, name, searchBases }, type, title, season,
 // often — update them in index.json.
 const SEARCHERS = { html: vegaSearchHtml, typesense: vegaSearch };
 
+// ============================================================================
+// 4KHDHub — English BluRay/WEB releases (2160p REMUX/HDR down to 1080p).
+// Chain: /?s= search cards → movie page (title "(YEAR)") → download items, each
+// a release header ("The Odyssey (2160p BluRay HDR H265)") with gateway links
+// (greenmotors ?id= → base64·base64·rot13·base64 JSON whose "o" is the
+// base64 hubcloud URL, or plain hubcloud/hubdrive links) → hubcloud drive page
+// → the same host-button chain as MoviesDrive. The page's own "Watch" iframe is
+// the Videasy player (a different upload), so it's never used here.
+// ============================================================================
+
+const hdRot13 = (s) => s.replace(/[a-z]/gi, (c) => {
+  const base = c <= "Z" ? 65 : 97;
+  return String.fromCharCode((c.charCodeAt(0) - base + 13) % 26 + base);
+});
+const hdB64 = (s) => Buffer.from(s, "base64").toString();
+
+// Theatre recordings and early telesync rips — never play these.
+const HDHUB_BAD_RE = /\b(cam|camrip|hdcam|ts|hdts|telesync|tc|hdtc|telecine|predvd|pre-?dvd|scr|screener)\b/i;
+
+export function parse4khdhubSearch(html, base) {
+  const out = [];
+  for (const m of html.matchAll(/<a\s+href="([^"]+)"\s+class="movie-card"[^>]*aria-label="([^"]+?)(?:\s+details)?"/gi)) {
+    out.push({ url: new URL(m[1], base).href, title: m[2].replace(/&amp;/g, "&").replace(/&#0?39;/g, "'") });
+  }
+  return out;
+}
+
+// Each download item: header label, file name, and its gateway links.
+export function parse4khdhubReleases(html) {
+  const out = [];
+  const parts = html.split(/<div class="download-item\b/i).slice(1);
+  for (const part of parts) {
+    const label = (part.match(/download-header[^>]*>\s*<div[^>]*>\s*([^<]+)/i)?.[1] || "").trim();
+    const file = (part.match(/class="file-title">([^<]+)/i)?.[1] || "").trim();
+    const links = [...part.matchAll(/href="(https?:\/\/[^"]+)"/gi)].map((m) => m[1].replace(/&amp;/g, "&"))
+      .filter((h) => /\?id=|hubcloud|hubdrive|hubcdn/i.test(h) && !/4khdhub/i.test(h));
+    if (label || file) out.push({ label, file, links });
+  }
+  return out;
+}
+
+export function rank4khdhubRelease(r) {
+  const s = `${r.label} ${r.file}`;
+  if (HDHUB_BAD_RE.test(s.replace(/[._]/g, " "))) return -1;
+  // Season packs/episodes on a movie page aren't the film.
+  if (/\bS\d{1,2}E\d{1,3}\b|\bS\d{1,2}\b.*complete/i.test(s)) return -1;
+  let score = /2160p|\b4k\b|uhd/i.test(s) ? 300 : /1080p/i.test(s) ? 200 : /720p/i.test(s) ? 100 : 50;
+  // Inside a tier: the encode streams better than an 80GB remux, and H264 plays
+  // where HEVC isn't decoded.
+  if (/remux/i.test(s)) score -= 20;
+  if (/h\.?264|x264|avc/i.test(s) && !/h\.?265|x265|hevc/i.test(s)) score += 5;
+  if (/bluray|blu-ray|web-?dl/i.test(s)) score += 2;
+  return score;
+}
+
+// greenmotors-style gateway → hubcloud URL.
+async function hdhubGateway(url, base) {
+  if (/hubcloud|hubdrive|hubcdn/i.test(new URL(url).hostname)) return url;
+  const html = await vegaText(url, base);
+  const tok = html.match(/s\(\s*'o'\s*,\s*'([^']+)'/)?.[1];
+  if (tok) {
+    try {
+      const data = JSON.parse(hdB64(hdRot13(hdB64(hdB64(tok)))));
+      const target = data.o ? hdB64(data.o).trim() : "";
+      if (/^https?:\/\//i.test(target)) return target;
+    } catch {}
+  }
+  return html.match(/href="(https?:\/\/[^"]*(?:hubcloud|hubdrive)[^"]*)"/i)?.[1]?.replace(/&amp;/g, "&") || null;
+}
+
+async function resolve4khdhub(params, req) {
+  const name = params.name || "4KHDHub";
+  const title = req.title || req.cartoonTitle;
+  if (!title) throw new Error(`${name}: title required`);
+  if (req.type === "tv") throw new Error(`${name}: movies only`);
+  const year = req.year ? Number(req.year) : null;
+
+  let base, cards = [], searchError;
+  for (const b of params.bases) {
+    try {
+      cards = parse4khdhubSearch(await vegaText(`${b}/?s=${encodeURIComponent(title)}`, b), b);
+      base = b;
+      break;
+    } catch (e) { searchError = e; }
+  }
+  if (!base) throw new Error(`${name}: catalog unavailable (${searchError?.message})`);
+  const candidates = cards
+    .map((c) => ({ ...c, s: vegaScore(title, c.title) }))
+    .filter((c) => c.s >= 0.55 && !/-series-|season/i.test(c.url))
+    .sort((a, b) => b.s - a.s)
+    .slice(0, 4);
+  if (!candidates.length) throw new Error(`${name}: no match for "${title}"`);
+
+  // Same-name films are common ("The Odyssey" 1997/2026): the page's <title>
+  // carries the year, which must match.
+  let page = null;
+  for (const c of candidates) {
+    const html = await vegaText(c.url, base).catch(() => "");
+    const y = Number(html.match(/<title>[^<]*\((\d{4})\)/i)?.[1]) || null;
+    if (year && y && Math.abs(y - year) > 1) continue;
+    if (year && !y) continue;
+    page = { url: c.url, html };
+    break;
+  }
+  if (!page) throw new Error(`${name}: no ${year || ""} page for "${title}"`.replace("  ", " "));
+
+  const releases = parse4khdhubReleases(page.html)
+    .map((r) => ({ ...r, rank: rank4khdhubRelease(r) }))
+    .filter((r) => r.rank >= 0 && r.links.length)
+    .sort((a, b) => b.rank - a.rank);
+  if (!releases.length) throw new Error(`${name}: no playable releases`);
+
+  const tag = (r) => (r.label.match(/\(([^)]+)\)\s*$/)?.[1] || r.file || "file");
+  const resolveRelease = async (r) => {
+    for (const link of r.links) {
+      const hub = await hdhubGateway(link, base).catch(() => null);
+      if (!hub) continue;
+      const streams = await vegaResolveDownloadLink(hub, null, base).catch(() => []);
+      if (streams.length) return streams;
+    }
+    return [];
+  };
+  // Best tier first; the next one or two resolve alongside as fallbacks.
+  const picked = releases.slice(0, 3);
+  const perRelease = await Promise.all(picked.map((r) => within(resolveRelease(r), 30000, [])));
+  const qualities = [];
+  const seen = new Set();
+  for (const [i, streams] of perRelease.entries()) {
+    for (const s of streams.slice(0, 2)) {
+      if (seen.has(s.url)) continue;
+      seen.add(s.url);
+      qualities.push({ quality: `${tag(picked[i])} · ${s.server}`, url: s.url, type: "mp4" });
+    }
+  }
+  if (!qualities.length) throw new Error(`${name}: download servers returned no playable video`);
+
+  // BluRay audio is usually DTS/TrueHD/AC3 — remux to AAC when ffmpeg exists.
+  if (await ffmpegBin()) {
+    await Promise.all(qualities.map(async (q) => {
+      const verdict = await within(probeAudioSupport(q.url), 12000, "unknown");
+      if (verdict === "bad") { q.url = `/api/remux?url=${encodeURIComponent(q.url)}`; q.type = "hls"; }
+    }));
+  }
+  return { cdn: new URL(base).hostname, verified: true, qualities, page: page.url };
+}
+
 export async function resolve(req, { params }) {
+  if (params.site === "4khdhub") return resolve4khdhub(params, req);
   const searchBases = params.search.map((s) => ({ base: s.base, search: SEARCHERS[s.api] }));
   return resolveVegaLike({ base: searchBases[0].base, name: params.name, searchBases },
     req.type, req.cartoonTitle || req.title, req.season, req.episode, req.id, req.year);

@@ -21,8 +21,21 @@ function cartoonNorm(s) {
 }
 
 function cartoonScore(query, candidate) {
-  const qw = new Set(cartoonNorm(query).split(" ").filter(Boolean));
-  const cw = new Set(cartoonNorm(candidate).split(" ").filter(Boolean));
+  // Whole-string squash first: some series names are concatenated without
+  // camel boundaries ("TomandJerry" splits as "tomand"+"jerry"), which word
+  // overlap can never match. "tom and jerry" is contained whole in the
+  // squashed candidate — that is a strong signal. Short queries stay on word
+  // matching alone: "tom" squashed would false-hit everything.
+  const q0 = cartoonNorm(query), c0 = cartoonNorm(candidate);
+  const sq = (s) => s.replace(/ /g, "");
+  const q = sq(q0), c = sq(c0);
+  if (q.length >= 5 && c.length >= 5) {
+    if (c === q) return 1;
+    if (c.includes(q)) return 0.99;
+    if (q.includes(c)) return (0.95 * c.length) / q.length;
+  }
+  const qw = new Set(q0.split(" ").filter(Boolean));
+  const cw = new Set(c0.split(" ").filter(Boolean));
   if (!qw.size || !cw.size) return 0;
   let hit = 0;
   for (const w of qw) if (cw.has(w)) hit++;

@@ -79,7 +79,7 @@ export async function jiosaavnSearch(q) {
 // JioSaavn: official search API + DES decryption of the media URL.
 // search.getResults returns full song objects (encrypted_media_url, duration)
 // unlike autocomplete.get, which needs a second getDetails round trip.
-async function jiosaavnSearchFallback(q) {
+export async function jiosaavnSearchFallback(q) {
   const html = await curlFetch(`https://www.jiosaavn.com/api.php?__call=search.getResults&q=${encodeURIComponent(q)}&_format=json&_marker=0&p=1&n=30&ctx=web6dot0`, {
     Accept: "application/json",
   });

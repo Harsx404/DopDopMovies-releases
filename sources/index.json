@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2026.11.5.2",
+  "version": "2026.11.14.4",
   "minApp": "1.2.21",
   "modules": {
     "videasy": {
@@ -111,7 +111,7 @@
     },
     "vega": {
       "file": "modules/vega.mjs",
-      "version": "1.2.2",
+      "version": "1.3.0",
       "config": {
         "pixeldrain": "https://pixeldrain.dev"
       }
@@ -363,9 +363,22 @@
     },
     "katdrama": {
       "file": "modules/katdrama.mjs",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "config": {
-        "base": "https://k-drama.in"
+        "base": "https://vidsync.pro"
+      }
+    },
+    "adult-nhentai": {
+      "file": "modules/adult-nhentai.mjs",
+      "version": "1.0.0",
+      "config": {
+        "api": "https://nhentai.net/api/v2",
+        "image": "https://i1.nhentai.net",
+        "thumb": "https://t1.nhentai.net",
+        "blockedTags": [
+          "lolicon",
+          "shotacon"
+        ]
       }
     }
   },
@@ -379,6 +392,21 @@
       "module": "videasy",
       "params": {
         "fallback": "vidzen"
+      }
+    },
+    {
+      "id": "4khdhub",
+      "label": "Kawagoe",
+      "kind": "hls",
+      "note": "4K BluRay · direct files · movies",
+      "resolveTimeoutMs": 90000,
+      "module": "vega",
+      "params": {
+        "site": "4khdhub",
+        "name": "4KHDHub",
+        "bases": [
+          "https://4khdhub.one"
+        ]
       }
     },
     {
@@ -472,6 +500,7 @@
         "tv"
       ],
       "scope": "cartoon",
+      "checkTitle": "Tom and Jerry",
       "module": "cartoons",
       "params": {
         "site": "supercartoons"
@@ -486,6 +515,7 @@
         "tv"
       ],
       "scope": "cartoon",
+      "checkTitle": "Tom and Jerry",
       "module": "cartoons",
       "params": {
         "site": "toonjet"
@@ -575,7 +605,11 @@
         "name": "VegaMovies",
         "search": [
           {
-            "base": "https://veqamovies.xyz",
+            "base": "https://vegamovies10.co.in",
+            "api": "html"
+          },
+          {
+            "base": "https://vegamoviess.mobi",
             "api": "html"
           }
         ]
@@ -690,10 +724,11 @@
     }
   ],
   "files": {
+    "modules/adult-nhentai.mjs": "b155fffa85d44e8a39fa683e3cc607c5b8c7b5367f307f757b15e0353333f57b",
     "modules/animeparadise.mjs": "3db747e359758b10de1b0e5e3165b7881fa1530719e993e42ffd8748fd56aa95",
-    "modules/audio-jiosaavn.mjs": "98e0982f68b5ca136b2b5dc858c211de65172ce7a21dbaa7c9e5735cf8f2fe49",
+    "modules/audio-jiosaavn.mjs": "1f38be6ecb1cea08a5b4800a222079f1d85b71c50eda664d6085294a0fd15991",
     "modules/audio-radio.mjs": "fa5bd058b22fffb290b7ce9d0ab259e1a72d98443c8ba0e782bbb347e151df3c",
-    "modules/cartoons.mjs": "e0aee790c83080ee779b66e4335cc081773f1b3a7b4b58fb75768b45fb390107",
+    "modules/cartoons.mjs": "9f2111a190d03281a20762afe50355dc80d3ca0a01926bda057ddbf69f6ee74f",
     "modules/dramafren.mjs": "6616466a7a8e53c2b5283fb8f87cd8147a003b3496277b7febdce5100855c3dd",
     "modules/games-ankergames.mjs": "6569d699e07208fa38e701df15ba1747887b64d15f123c49c6c5b80f1ba02db1",
     "modules/games-astralgames.mjs": "2522836ae106d40feb5ae607778b68c26dd66f6c97ae79cdd56ca996689c81ee",
@@ -705,7 +740,7 @@
     "modules/games-m4ckd0ge.mjs": "875c28cf8777f1c837540d632d9b2886d10dce794fdb97558c0d8ffc9bb15490",
     "modules/hianime.mjs": "1ab2eea16660a23cebc95d9cfc73dedfed673883b6c6848df3b60af113147ce7",
     "modules/kaa.mjs": "8c048d954206d7da33ab19fdc54090df9105beae3682c580a0a474a8136fbe21",
-    "modules/katdrama.mjs": "6e8f37b53a4b55b066c776a2f5fdf09e21b6e4aa85992a371b7ec16bb6a9d7e9",
+    "modules/katdrama.mjs": "20d65c09c84fd32b3294d6b8266c12f0a6dd6ea51a457f07ed2183b7ee87ab88",
     "modules/kissasian.mjs": "952cd035e9ea96114862159b83c3f38044c959d7f1dfe9436beba053315b9d3d",
     "modules/live-media.mjs": "df8c97744a6762de05b708914bbf2d65bc06e89d8ee14ce57535d9c1ef894e8f",
     "modules/live-pluto.mjs": "49129797e153443b9b84ccaf8e574cf8cd1ef8329998e37a63801c53ae13de04",
@@ -725,7 +760,7 @@
     "modules/read-novelfull.mjs": "60739e2f655de2f8ce847b8dcad729a82730b523220b4361f00e1e9549533ac1",
     "modules/read-rco.mjs": "5256845a0eb4c22bf156bc078f45a807b83096c74f7168933aa8e92205d1248a",
     "modules/vega-domains.mjs": "71ab7c377bde7585867262c516efb873970228295934e3efacc197a0ed1509f3",
-    "modules/vega.mjs": "9e00513190cdad6eba00032d8e606f0fe1412cc3717d430704d78b784367de8b",
+    "modules/vega.mjs": "08eabb258cacc62ec5f36fc2c97c106142e985099fadfe79b99dcebf93b6ee86",
     "modules/vidcore.mjs": "c5aed40afa2f6c14123ea19a824be0232c09b4cd5171d694438abbc273698a8b",
     "modules/videasy.mjs": "ca0bc6aa637c64b615f4c1c36d8c4875d450fb94618c00c9491a510c89ae62c2",
     "modules/vidsrc.mjs": "3f0fe46b3387280e77020bf8ace01992376834ad49d645aeeb88e240bfbf4263",
