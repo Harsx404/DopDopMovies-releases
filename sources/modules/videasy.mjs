@@ -4,7 +4,7 @@
 // with the app runtime and this module's config from index.json; resolve()
 // runs per play. Hosts and endpoints live in index.json, not here.
 
-let UA, dnsFetch, dnsFetchStream, getHeadersForHost, resolveUrl, VIDEASY_APIS, VIDEASY_ENDPOINTS, VIDEASY_CITIES, VIDZEN_API, VIDZEN_REFERER;
+let UA, dnsFetch, dnsFetchStream, getHeadersForHost, resolveUrl, VIDEASY_APIS, VIDEASY_ENDPOINTS, VIDEASY_CITIES, VIDZEN_API, VIDZEN_REFERER, VIDZEN_SERVERS;
 
 export function setup(rt, config) {
   ({ UA, dnsFetch, dnsFetchStream, getHeadersForHost, resolveUrl } = rt);
@@ -17,6 +17,7 @@ export function setup(rt, config) {
   VIDEASY_CITIES = config.cities;
   VIDZEN_API = config.vidzen.api;
   VIDZEN_REFERER = config.vidzen.referer;
+  VIDZEN_SERVERS = config.vidzen.servers || ["hyperion", "polaris", "callisto", "orion", "ceres", "mars"];
 }
 
 // A stream counts as playing when its first segment answers. Only the first kilobyte is read:
@@ -68,11 +69,19 @@ function Pf(l,o,e){const i=Df(l);const r=xf(o,e,i.length);for(let n=0;n<i.length
 // VidZen — vidcore.org's primary backend. /api/sources returns tokenized
 // master playlists (relative /api/stream/... paths) plus a sourcePool keyed by
 // server name; pool entries carry their own subtitles.
-async function resolveVidZen(tmdbId, type, season, episode) {
-  let url = `${VIDZEN_API}/api/sources?type=${type}&id=${tmdbId}`;
-  if (type === "tv") url += `&season=${season || 1}&episode=${episode || 1}`;
-  const r = await dnsFetch(url, { headers: { "User-Agent": UA, Referer: VIDZEN_REFERER } });
-  if (!r.ok) throw new Error(`VidZen: HTTP ${r.status}`);
+// /api/sources needs a short-lived per-title token, which the embed page
+// carries in its server-rendered props as "apiToken".
+async function vidzenToken(pagePath) {
+  const r = await dnsFetch(`${VIDZEN_API}/${pagePath}`, { headers: { "User-Agent": UA, Referer: VIDZEN_REFERER } });
+  if (!r.ok) throw new Error(`VidZen page: HTTP ${r.status}`);
+  const m = (await r.text()).match(/apiToken\\?"\s*:\s*\\?"([A-Za-z0-9._-]+)/);
+  if (!m) throw new Error("VidZen: no token");
+  return m[1];
+}
+
+async function vidzenStreams(base, server, token, referer) {
+  const r = await dnsFetch(`${base}&server=${server}&token=${encodeURIComponent(token)}`, { headers: { "User-Agent": UA, Referer: referer } });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const data = JSON.parse(await r.text());
   const pools = Object.values(data.sourcePool || {});
   const raw = [...(Array.isArray(data.sources) ? data.sources : []),
@@ -80,13 +89,14 @@ async function resolveVidZen(tmdbId, type, season, episode) {
   const seen = new Set();
   const streams = [];
   for (const s of raw) {
-    if (!s || !s.url) continue;
+    // The player can't play DASH (some servers hand out HEVC .mpd only).
+    if (!s || !s.url || s.type === "dash") continue;
     const abs = s.url.startsWith("/") ? VIDZEN_API + s.url : s.url;
     if (!/^https?:\/\//.test(abs) || seen.has(abs)) continue;
     seen.add(abs);
     streams.push({ quality: s.quality || s.server || "auto", url: abs });
   }
-  if (!streams.length) throw new Error("VidZen: no sources");
+  if (!streams.length) throw new Error(data.error || "no sources");
 
   // Same playback check as VidCore — manifest + first segment.
   const first = streams[0].url;
@@ -102,7 +112,29 @@ async function resolveVidZen(tmdbId, type, season, episode) {
       } catch { valid = false; }
     }
   }
-  if (!valid) throw new Error(`VidZen: stream failed playback check (CDN ${host})`);
+  if (!valid) throw new Error(`stream failed playback check (CDN ${host})`);
+  return { data, pools, streams, host };
+}
+
+// Servers race in parallel; the first in preference order that plays wins.
+async function resolveVidZen(tmdbId, type, season, episode) {
+  const pagePath = type === "tv" ? `tv/${tmdbId}/${season || 1}/${episode || 1}` : `movie/${tmdbId}`;
+  const token = await vidzenToken(pagePath);
+  let base = `${VIDZEN_API}/api/sources?type=${type}&id=${tmdbId}`;
+  if (type === "tv") base += `&season=${season || 1}&episode=${episode || 1}`;
+  const referer = `${VIDZEN_API}/${pagePath}`;
+  const pending = VIDZEN_SERVERS.map((server) => Promise.race([
+    vidzenStreams(base, server, token, referer),
+    new Promise((_, rej) => setTimeout(() => rej(new Error("deadline")), 15000)),
+  ]).then((v) => ({ v }), (e) => { console.log(`  vidzen ${server}: ${String(e?.message || e).slice(0, 60)}`); return { e }; }));
+  let found = null, lastErr = null;
+  for (const p of pending) {
+    const r = await p;
+    if (r.v) { found = r.v; break; }
+    lastErr = r.e;
+  }
+  if (!found) throw new Error(`VidZen: ${lastErr?.message || "no sources"}`);
+  const { data, pools, streams, host } = found;
 
   const subtitles = [];
   for (const s of [...(data.subtitles || []), ...pools.flatMap((p) => (p && p.subtitles) || [])]) {

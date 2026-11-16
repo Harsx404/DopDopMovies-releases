@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "version": "2026.11.14.7",
+  "version": "2026.11.16.2",
   "minApp": "1.2.21",
   "modules": {
     "videasy": {
       "file": "modules/videasy.mjs",
-      "version": "1.1.3",
+      "version": "1.2.0",
       "config": {
         "apis": [
           {
@@ -49,7 +49,15 @@
         },
         "vidzen": {
           "api": "https://vidzen.fun",
-          "referer": "https://vidcore.org/"
+          "referer": "https://vidcore.org/",
+          "servers": [
+            "hyperion",
+            "polaris",
+            "callisto",
+            "orion",
+            "ceres",
+            "mars"
+          ]
         }
       }
     },
@@ -762,7 +770,7 @@
     "modules/vega-domains.mjs": "71ab7c377bde7585867262c516efb873970228295934e3efacc197a0ed1509f3",
     "modules/vega.mjs": "08eabb258cacc62ec5f36fc2c97c106142e985099fadfe79b99dcebf93b6ee86",
     "modules/vidcore.mjs": "c5aed40afa2f6c14123ea19a824be0232c09b4cd5171d694438abbc273698a8b",
-    "modules/videasy.mjs": "ca0bc6aa637c64b615f4c1c36d8c4875d450fb94618c00c9491a510c89ae62c2",
+    "modules/videasy.mjs": "60fd70e496fd39ba98b65d40341ce555260dbb46a7ef64e017167857cf57c500",
     "modules/vidsrc.mjs": "3f0fe46b3387280e77020bf8ace01992376834ad49d645aeeb88e240bfbf4263",
     "modules/wing-crush.wasm": "40c923580779e2a850fc5ab3f0046be565ed717883cf4547ed3a87de2450bdcf",
     "modules/wing.mjs": "f1ffb2a0f52011617b0a67b0d93e35c5cc956334299881d7dcf8875876a99614",
