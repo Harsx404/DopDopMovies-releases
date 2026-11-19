@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "version": "2026.11.16.2",
+  "version": "2026.11.19.1",
   "minApp": "1.2.21",
   "modules": {
     "videasy": {
       "file": "modules/videasy.mjs",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "config": {
         "apis": [
           {
@@ -14,13 +14,6 @@
             "referer": "https://www.vidy.st/",
             "origin": "https://www.vidy.st",
             "fmt": "city"
-          },
-          {
-            "api": "https://api.speedracelight.com",
-            "db": "https://db.speedracelight.com",
-            "referer": "https://www.vidking.net/",
-            "origin": "https://www.vidking.net",
-            "fmt": "legacy"
           }
         ],
         "legacyEndpoints": {
@@ -29,22 +22,25 @@
           "videasy-vyse": "hdmovie/sources-with-title"
         },
         "cities": {
-          "videasy-yoru": [
-            "miami",
-            "boise",
-            "denver",
-            "seattle"
-          ],
-          "videasy-breach": [
-            "denver",
-            "phoenix",
-            "seattle",
-            "miami"
-          ],
           "videasy-vyse": [
             "delhi",
             "miami",
             "boise"
+          ],
+          "videasy-miami": [
+            "miami"
+          ],
+          "videasy-boise": [
+            "boise"
+          ],
+          "videasy-chicago": [
+            "chicago"
+          ],
+          "videasy-phoenix": [
+            "phoenix"
+          ],
+          "videasy-austin": [
+            "austin"
           ]
         },
         "vidzen": {
@@ -119,7 +115,7 @@
     },
     "vega": {
       "file": "modules/vega.mjs",
-      "version": "1.3.0",
+      "version": "1.3.1",
       "config": {
         "pixeldrain": "https://pixeldrain.dev"
       }
@@ -312,7 +308,7 @@
     },
     "dramafren": {
       "file": "modules/dramafren.mjs",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "config": {}
     },
     "kissasian": {
@@ -371,14 +367,14 @@
     },
     "katdrama": {
       "file": "modules/katdrama.mjs",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "config": {
         "base": "https://vidsync.pro"
       }
     },
     "adult-nhentai": {
       "file": "modules/adult-nhentai.mjs",
-      "version": "1.0.0",
+      "version": "1.1.1",
       "config": {
         "api": "https://nhentai.net/api/v2",
         "image": "https://i1.nhentai.net",
@@ -388,19 +384,123 @@
           "shotacon"
         ]
       }
+    },
+    "megaplay": {
+      "file": "modules/megaplay.mjs",
+      "version": "1.0.0",
+      "config": {
+        "base": "https://megaplay.buzz",
+        "anilist": "https://graphql.anilist.co",
+        "decrypt": "https://enc-dec.app/api/dec-megaplay"
+      }
+    },
+    "adult-video": {
+      "file": "modules/adult-video.mjs",
+      "version": "1.0.0"
+    },
+    "files-modpro": {
+      "file": "modules/files-modpro.mjs",
+      "version": "1.0.1",
+      "config": {
+        "sites": {
+          "uhdmovies": {
+            "base": "https://uhdmovies.ceo"
+          },
+          "moviesmod": {
+            "base": "https://moviesmod.fi"
+          },
+          "moviesleech": {
+            "base": "https://moviesleech.help"
+          }
+        }
+      }
     }
   },
   "sources": [
     {
-      "id": "videasy-yoru",
-      "label": "Kyoto",
+      "id": "videasy-miami",
+      "label": "Miami",
       "kind": "hls",
-      "note": "4K · subtitles",
+      "note": "Up to 4K · subtitles",
+      "subtitles": true,
+      "module": "videasy",
+      "resolveTimeoutMs": 30000
+    },
+    {
+      "id": "videasy-boise",
+      "label": "Boise",
+      "kind": "hls",
+      "note": "Up to 4K · subtitles",
+      "subtitles": true,
+      "module": "videasy",
+      "resolveTimeoutMs": 30000
+    },
+    {
+      "id": "videasy-chicago",
+      "label": "Chicago",
+      "kind": "hls",
+      "note": "1080p · subtitles",
+      "subtitles": true,
+      "module": "videasy",
+      "resolveTimeoutMs": 30000
+    },
+    {
+      "id": "videasy-phoenix",
+      "label": "Phoenix",
+      "kind": "hls",
+      "note": "1080p · subtitles",
+      "subtitles": true,
+      "module": "videasy",
+      "resolveTimeoutMs": 30000
+    },
+    {
+      "id": "videasy-austin",
+      "label": "Austin",
+      "kind": "hls",
+      "note": "1080p · Hindi + English audio",
+      "subtitles": true,
+      "module": "videasy",
+      "resolveTimeoutMs": 30000,
+      "dualAudio": true
+    },
+    {
+      "id": "vidzen-polaris",
+      "label": "Polaris",
+      "kind": "hls",
+      "note": "Up to 4K · subtitles",
       "subtitles": true,
       "module": "videasy",
       "params": {
-        "fallback": "vidzen"
-      }
+        "only": "vidzen",
+        "server": "polaris"
+      },
+      "resolveTimeoutMs": 30000
+    },
+    {
+      "id": "vidzen-ceres",
+      "label": "Ceres",
+      "kind": "hls",
+      "note": "1080p · subtitles",
+      "subtitles": true,
+      "module": "videasy",
+      "params": {
+        "only": "vidzen",
+        "server": "ceres"
+      },
+      "resolveTimeoutMs": 30000
+    },
+    {
+      "id": "vidzen-mars",
+      "label": "Mars",
+      "kind": "hls",
+      "note": "1080p · subtitles",
+      "subtitles": true,
+      "module": "videasy",
+      "params": {
+        "only": "vidzen",
+        "server": "mars"
+      },
+      "resolveTimeoutMs": 30000
     },
     {
       "id": "4khdhub",
@@ -415,7 +515,8 @@
         "bases": [
           "https://4khdhub.one"
         ]
-      }
+      },
+      "files": true
     },
     {
       "id": "vidcore-movy",
@@ -440,15 +541,6 @@
       "resolveTimeoutMs": 45000
     },
     {
-      "id": "videasy-breach",
-      "label": "Sapporo",
-      "kind": "hls",
-      "note": "auto quality",
-      "subtitles": true,
-      "module": "videasy",
-      "fallback": "vidcore-cineplay"
-    },
-    {
       "id": "videasy-vyse",
       "label": "Fukuoka",
       "kind": "hls",
@@ -458,7 +550,8 @@
       "module": "videasy",
       "params": {
         "fallback": "vidzen"
-      }
+      },
+      "resolveTimeoutMs": 35000
     },
     {
       "id": "vidcore-nova",
@@ -544,6 +637,16 @@
       }
     },
     {
+      "id": "megaplay",
+      "label": "Kagoshima",
+      "kind": "hls",
+      "note": "anime · sub & dub · 1080p · older shows",
+      "subtitles": true,
+      "scope": "anime",
+      "resolveTimeoutMs": 30000,
+      "module": "megaplay"
+    },
+    {
       "id": "kaa",
       "label": "Tokyo",
       "kind": "hls",
@@ -598,7 +701,8 @@
           }
         ]
       },
-      "fallback": "vega-mirror"
+      "fallback": "vega-mirror",
+      "files": true
     },
     {
       "id": "vega-mirror",
@@ -621,7 +725,8 @@
             "api": "html"
           }
         ]
-      }
+      },
+      "files": true
     },
     {
       "id": "drive",
@@ -635,29 +740,12 @@
         "name": "MoviesDrive",
         "search": [
           {
-            "base": "https://new1.moviesdrive.cyou",
+            "base": "https://new3.moviesdrive.cyou",
             "api": "typesense"
           }
         ]
-      }
-    },
-    {
-      "id": "lux",
-      "label": "Beppu",
-      "kind": "hls",
-      "note": "Hindi · mirror",
-      "scope": "bollywood",
-      "resolveTimeoutMs": 60000,
-      "module": "vega",
-      "params": {
-        "name": "RogMovies",
-        "search": [
-          {
-            "base": "https://new2.rogmovies.click",
-            "api": "typesense"
-          }
-        ]
-      }
+      },
+      "files": true
     },
     {
       "id": "embed-vidlink",
@@ -732,12 +820,14 @@
     }
   ],
   "files": {
-    "modules/adult-nhentai.mjs": "b155fffa85d44e8a39fa683e3cc607c5b8c7b5367f307f757b15e0353333f57b",
+    "modules/adult-nhentai.mjs": "629a422ecb1c027954db1ff6db7d9c93ba44f352455de9916aec01eaa3e4a11d",
+    "modules/adult-video.mjs": "d8a8e33cb8f885d809d5f694c23d740ea35a8223f3fca26a00fd20eee33bd426",
     "modules/animeparadise.mjs": "3db747e359758b10de1b0e5e3165b7881fa1530719e993e42ffd8748fd56aa95",
     "modules/audio-jiosaavn.mjs": "1f38be6ecb1cea08a5b4800a222079f1d85b71c50eda664d6085294a0fd15991",
     "modules/audio-radio.mjs": "fa5bd058b22fffb290b7ce9d0ab259e1a72d98443c8ba0e782bbb347e151df3c",
     "modules/cartoons.mjs": "9f2111a190d03281a20762afe50355dc80d3ca0a01926bda057ddbf69f6ee74f",
-    "modules/dramafren.mjs": "6616466a7a8e53c2b5283fb8f87cd8147a003b3496277b7febdce5100855c3dd",
+    "modules/dramafren.mjs": "72c069fe6fc5bd98566117a701a7976bed83023d4db94ae70571e1eaa317330d",
+    "modules/files-modpro.mjs": "860c82237297b0275d0357a227c0b0a40f4b0127083b1cf4d1ee5c98b60e0e0b",
     "modules/games-ankergames.mjs": "6569d699e07208fa38e701df15ba1747887b64d15f123c49c6c5b80f1ba02db1",
     "modules/games-astralgames.mjs": "2522836ae106d40feb5ae607778b68c26dd66f6c97ae79cdd56ca996689c81ee",
     "modules/games-browser.mjs": "179736e7fcc656c1d3fff321daa41cb59db744440630ffd062bd943603526654",
@@ -748,7 +838,7 @@
     "modules/games-m4ckd0ge.mjs": "875c28cf8777f1c837540d632d9b2886d10dce794fdb97558c0d8ffc9bb15490",
     "modules/hianime.mjs": "1ab2eea16660a23cebc95d9cfc73dedfed673883b6c6848df3b60af113147ce7",
     "modules/kaa.mjs": "8c048d954206d7da33ab19fdc54090df9105beae3682c580a0a474a8136fbe21",
-    "modules/katdrama.mjs": "20d65c09c84fd32b3294d6b8266c12f0a6dd6ea51a457f07ed2183b7ee87ab88",
+    "modules/katdrama.mjs": "2a4657f4f76d8a41d03e49466dfda47edabf1eb92c15a359f59fc4967ec1d513",
     "modules/kissasian.mjs": "952cd035e9ea96114862159b83c3f38044c959d7f1dfe9436beba053315b9d3d",
     "modules/live-media.mjs": "3dfe3c09e0d7ebc10ecf36e458c4b9acd4eba7afd1e52b3cebbdb54d93d39cf3",
     "modules/live-pluto.mjs": "49129797e153443b9b84ccaf8e574cf8cd1ef8329998e37a63801c53ae13de04",
@@ -756,7 +846,8 @@
     "modules/live-sportsindx.mjs": "03d77b85a49431efeb366c0b99d5c5f9d57b8c8e5f4ecac9ee15d24a72ca3fc4",
     "modules/live-streamfree.mjs": "79b8cac36078212d7a2c73fae6a0a344865028d3a25432cb1047a1dd7f3e8bc7",
     "modules/live-timstreams.mjs": "90069c02b7884045f76144b1b205d0cbd9c7f1fc145e238639196383eb57093d",
-    "modules/nepu.mjs": "d3b4ec38a2112c39c010d7983530eb00736870434913be596632ed6441394ef1",
+    "modules/megaplay.mjs": "125de7df1b2d071fb76519e927bbc3b75399fc0a5d982c7e4d8c6665787b3875",
+    "modules/nepu.mjs": "f074229624726f76cbf3db8f888de5fec9e4522a91826d346700b0f5f8c4123a",
     "modules/piratexplay.mjs": "9920721bf02899c46decc0694ac2a9dd069659e155cb3e8b4bcea63180b71c99",
     "modules/read-asura.mjs": "c5028cfb30f12f818f0e2dc2acc104f9205d01b5e7d23c133eaa30e0eafb46ad",
     "modules/read-flame.mjs": "3015f89b2ed058289c02879f2416b4521fe29e1321c695e5b38bc2e073b63e4c",
@@ -768,9 +859,9 @@
     "modules/read-novelfull.mjs": "60739e2f655de2f8ce847b8dcad729a82730b523220b4361f00e1e9549533ac1",
     "modules/read-rco.mjs": "5256845a0eb4c22bf156bc078f45a807b83096c74f7168933aa8e92205d1248a",
     "modules/vega-domains.mjs": "71ab7c377bde7585867262c516efb873970228295934e3efacc197a0ed1509f3",
-    "modules/vega.mjs": "08eabb258cacc62ec5f36fc2c97c106142e985099fadfe79b99dcebf93b6ee86",
+    "modules/vega.mjs": "57e414e3b649323466503d2cef8a097ccd3e7d70953a732fce03ee1c9e0c23b8",
     "modules/vidcore.mjs": "c5aed40afa2f6c14123ea19a824be0232c09b4cd5171d694438abbc273698a8b",
-    "modules/videasy.mjs": "60fd70e496fd39ba98b65d40341ce555260dbb46a7ef64e017167857cf57c500",
+    "modules/videasy.mjs": "5d5c018b6d285841d26d41d3c5a544b217e94787acf40930eeb5f7baa7cfaa94",
     "modules/vidsrc.mjs": "3f0fe46b3387280e77020bf8ace01992376834ad49d645aeeb88e240bfbf4263",
     "modules/wing-crush.wasm": "40c923580779e2a850fc5ab3f0046be565ed717883cf4547ed3a87de2450bdcf",
     "modules/wing.mjs": "f1ffb2a0f52011617b0a67b0d93e35c5cc956334299881d7dcf8875876a99614",
@@ -1008,6 +1099,88 @@
       "browserAssisted": false,
       "releaseType": "repack",
       "note": "Compressed repacks · direct mirrors · included-fix labels"
+    }
+  ],
+  "adult": [
+    {
+      "id": "adult-hdsex",
+      "provider": "hdsex",
+      "label": "HDSex",
+      "note": "HD tube · proxied HLS",
+      "search": "/hdsex-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-xnxx",
+      "provider": "xnxx",
+      "label": "XNXX",
+      "note": "Big tube · multi-quality MP4",
+      "search": "/xnxx-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-redgifs",
+      "provider": "redgifs",
+      "label": "RedGIFs",
+      "note": "Creator clips · MP4",
+      "search": "/rg-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-xbooru",
+      "provider": "xbooru",
+      "label": "XBooru",
+      "note": "Booru clips · MP4/WebM",
+      "search": "/xbooru-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-superporn",
+      "provider": "superporn",
+      "label": "SuperPorn",
+      "note": "Tube · direct MP4",
+      "search": "/sp-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-hentaihaven",
+      "provider": "hentaihaven",
+      "label": "HentaiHaven",
+      "note": "Hentai series · episodes",
+      "search": "/hh-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-leakgallery",
+      "provider": "leakgallery",
+      "label": "LeakGallery",
+      "note": "Creator archive · direct MP4",
+      "search": "/lg-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-viralxxxporn",
+      "provider": "viralxxxporn",
+      "label": "ViralXXX",
+      "note": "Leaked creator videos · direct MP4",
+      "search": "/vxp-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-xvideo",
+      "provider": "xvideo",
+      "label": "X-Video",
+      "note": "Leaked creator videos · direct MP4",
+      "search": "/xvt-search",
+      "module": "adult-video"
+    },
+    {
+      "id": "adult-nhentai",
+      "provider": "nhentai",
+      "label": "nhentai",
+      "note": "Hentai manga & doujinshi · browse, search, read",
+      "search": "/nh-search",
+      "module": "adult-nhentai"
     }
   ]
 }

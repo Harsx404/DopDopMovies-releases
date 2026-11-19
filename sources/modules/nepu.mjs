@@ -53,22 +53,36 @@ async function resolveNepu(type, title, year, season, episode) {
   const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   const wanted = type === "tv" ? "show" : "movie";
   const cards = new Map();
-  const re = /<a href="(?:https?:\/\/nepu\.io)?\/(movie|show)\/([^"#?]+)"[^>]*>([\s\S]*?)<\/a>/g;
+  // Each result has several links (poster with a "Full HD" badge, title, categories): the
+  // title is the `list-title` link, never the first link's text.
+  const re = /<a href="(?:https?:\/\/nepu\.io)?\/(movie|show)\/([^"#?]+)"([^>]*)>([\s\S]*?)<\/a>/g;
   let m;
   while ((m = re.exec(html))) {
-    const [, kind, slug, inner] = m;
+    const [, kind, slug, attrs, inner] = m;
     const text = inner.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
     const e = cards.get(slug) || { kind, slug, title: "" };
-    if (text && !e.title) e.title = text;
+    if (text && /list-title/.test(attrs)) e.title = text;
     cards.set(slug, e);
   }
+  const yearOf = (c) => Number(c.title.match(/\((\d{4})\)\s*$/)?.[1] || c.slug.match(/-((?:19|20)\d{2})-/)?.[1] || 0);
+  const bare = (c) => norm(c.title.replace(/\(\d{4}\)\s*$/, "")) || norm(c.slug.replace(/-\d+$/, "").replace(/-(?:19|20)\d{2}(?:-\d+)*$/, "").replace(/-/g, " "));
   const tNorm = norm(title);
-  const cands = [...cards.values()].filter((c) => c.kind === wanted);
-  const pick =
-    cands.find((c) => norm(c.title) === tNorm) ||
-    cands.find((c) => norm(c.slug.replace(/-\d+$/g, "").replace(/-/g, " ")) === tNorm) ||
-    cands.find((c) => norm(c.title).includes(tNorm) || (tNorm && norm(c.title) && tNorm.includes(norm(c.title)))) ||
-    cands[0];
+  const want = Number(year) || 0;
+  // Score by name and year; a result that doesn't carry the name is never played (a wrong
+  // film is worse than "not found", which lets the next source try).
+  const scored = [...cards.values()]
+    .filter((c) => c.kind === wanted)
+    .map((c) => {
+      const n = bare(c);
+      const nameScore = n === tNorm ? 3 : n && tNorm && (n.startsWith(tNorm) || tNorm.startsWith(n)) ? 1 : 0;
+      const y = yearOf(c);
+      // TMDB and the site often differ by a year or two on release; past that it's another film.
+      const yearScore = !want || !y ? 0 : Math.abs(y - want) <= 1 ? 2 : Math.abs(y - want) <= 4 ? 0 : -5;
+      return { c, score: nameScore ? nameScore + yearScore : -1 };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+  const pick = scored[0]?.c;
   if (!pick) throw new Error("Nepu: title not found");
 
   const pagePath = wanted === "show" ? `/show/${pick.slug}/season/${season || 1}/episode/${episode || 1}` : `/movie/${pick.slug}`;

@@ -117,15 +117,15 @@ async function vidzenStreams(base, server, token, referer) {
 }
 
 // Servers race in parallel; the first in preference order that plays wins.
-async function resolveVidZen(tmdbId, type, season, episode) {
+async function resolveVidZen(tmdbId, type, season, episode, servers = VIDZEN_SERVERS) {
   const pagePath = type === "tv" ? `tv/${tmdbId}/${season || 1}/${episode || 1}` : `movie/${tmdbId}`;
   const token = await vidzenToken(pagePath);
   let base = `${VIDZEN_API}/api/sources?type=${type}&id=${tmdbId}`;
   if (type === "tv") base += `&season=${season || 1}&episode=${episode || 1}`;
   const referer = `${VIDZEN_API}/${pagePath}`;
-  const pending = VIDZEN_SERVERS.map((server) => Promise.race([
+  const pending = servers.map((server) => Promise.race([
     vidzenStreams(base, server, token, referer),
-    new Promise((_, rej) => setTimeout(() => rej(new Error("deadline")), 15000)),
+    new Promise((_, rej) => setTimeout(() => rej(new Error("deadline")), servers.length === 1 ? 22000 : 15000)),
   ]).then((v) => ({ v }), (e) => { console.log(`  vidzen ${server}: ${String(e?.message || e).slice(0, 60)}`); return { e }; }));
   let found = null, lastErr = null;
   for (const p of pending) {
@@ -184,6 +184,9 @@ async function seedFor(base, tmdbId, fresh = false) {
   if (!fresh && hit && Date.now() - hit.at < SEED_TTL_MS) return hit.seed;
   const pending = dnsFetch(`${base.api}/seed?mediaId=${tmdbId}`, {
     headers: { "User-Agent": UA, Referer: base.referer, Origin: base.origin, Accept: "application/json" },
+    // The seed has taken 11-40s on a bad day; past 15s give up and let the
+    // fallback answer inside the player's budget.
+    signal: AbortSignal.timeout(15000),
   }).then(async (r) => {
     if (r.status === 429) { limitedUntil.set(base.api, Date.now() + LIMIT_PAUSE_MS); throw new Error("rate limited"); }
     const seed = JSON.parse(await r.text()).seed;
@@ -198,7 +201,7 @@ async function seedFor(base, tmdbId, fresh = false) {
 
 async function resolveVideasyVia(base, provider, tmdbId, type, season, episode) {
   const endpoints = base.fmt === "city"
-    ? (VIDEASY_CITIES[provider] || VIDEASY_CITIES["videasy-yoru"]).map((c) => `${c}/sources`)
+    ? (VIDEASY_CITIES[provider] || ["miami", "boise"]).map((c) => `${c}/sources`)
     : [VIDEASY_ENDPOINTS.legacy[provider] || "cdn/sources-with-title"];
 
   // Title details and the seed don't depend on each other: ask for both at once.
@@ -230,7 +233,8 @@ async function resolveVideasyVia(base, provider, tmdbId, type, season, episode) 
   // a dead CDN would otherwise eat ~10s per city and blow the frontend's 20s
   // budget. Each attempt snapshots params so a concurrent seed refresh can't
   // desync its decryption key.
-  const CITY_DEADLINE_MS = 12000;
+  // One city per server now (no race to lose), so it can take a little longer.
+  const CITY_DEADLINE_MS = endpoints.length === 1 ? 20000 : 12000;
   const tryCity = async (endpoint) => {
     const p = new URLSearchParams(params);
     const srcHeaders = { "User-Agent": UA, Referer: base.referer, Origin: base.origin, Accept: "*/*" };
@@ -300,6 +304,8 @@ async function resolveVideasyVia(base, provider, tmdbId, type, season, episode) 
 
 export async function resolve(req, { source, params }) {
   const { id, type, season, episode } = req;
+  // VidZen is its own server in the list now, not a hidden fallback.
+  if (params.only === "vidzen") return resolveVidZen(id, type, season, episode, params.server ? [params.server] : VIDZEN_SERVERS);
   const viaVideasy = resolveVideasy(source, id, type, season, episode);
   if (params.fallback !== "vidzen") return viaVideasy;
   return viaVideasy.catch((e) => {

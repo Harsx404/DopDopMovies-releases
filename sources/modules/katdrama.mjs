@@ -4,7 +4,7 @@
 //
 // DopDop source addon. Loaded by src/lib/source-pack.mjs. Hosts live in index.json.
 
-let UA, dnsFetch, BASE, NODES;
+let UA, dnsFetch, BASE, NODES, episodeRuntime;
 
 // VidSync spreads its API over many worker hosts; any of them answers any title.
 const DEFAULT_NODES = [
@@ -20,6 +20,7 @@ const DEFAULT_NODES = [
 
 export function setup(rt, config) {
   ({ UA, dnsFetch } = rt);
+  episodeRuntime = rt.tmdbEpisodeRuntime;
   BASE = (config.base || "https://vidsync.pro").replace(/\/+$/, "");
   NODES = Array.isArray(config.nodes) && config.nodes.length ? config.nodes : DEFAULT_NODES;
 }
@@ -33,11 +34,24 @@ function fnv(s) {
 
 const proxied = (url, referer) => `/api/hls?url=${encodeURIComponent(url)}${referer ? `&referer=${encodeURIComponent(referer)}` : ""}`;
 
-/** Some streams refuse anyone but their own player, so only the ones that answer are offered. */
-async function answers(url, referer) {
+/**
+ * Some streams refuse anyone but their own player, so only the ones that answer are offered.
+ * VidSync's providers can also return a different show of the same name: when the episode's
+ * length is known, a playlist far longer or shorter than it is dropped.
+ */
+async function answers(url, referer, minutes) {
   try {
-    const res = await dnsFetch(url, { headers: { "User-Agent": UA, ...(referer ? { Referer: referer } : {}) }, signal: AbortSignal.timeout(8000) });
-    return res.ok && (await res.text()).trimStart().startsWith("#EXTM3U");
+    const get = async (u) => { const r = await dnsFetch(u, { headers: { "User-Agent": UA, ...(referer ? { Referer: referer } : {}) }, signal: AbortSignal.timeout(8000) }); return r.ok ? r.text() : ""; };
+    let text = await get(url);
+    if (!text.trimStart().startsWith("#EXTM3U")) return false;
+    if (!minutes) return true;
+    // A master playlist: measure its first variant.
+    const variant = text.match(/^(?!#)(\S+)$/m)?.[1];
+    if (!/#EXTINF/.test(text) && variant) text = await get(new URL(variant, url).href);
+    const secs = [...text.matchAll(/#EXTINF:([\d.]+)/g)].reduce((n, m) => n + Number(m[1]), 0);
+    if (!secs) return true;
+    const got = secs / 60;
+    return Math.abs(got - minutes) <= Math.max(15, minutes * 0.35);
   } catch { return false; }
 }
 
@@ -86,9 +100,10 @@ export async function resolve(req) {
     try {
       const data = await call(node, `/api/core/streams?${q}`, id);
       const { qualities } = parseStreams(data);
-      const checks = await Promise.all(qualities.map((x) => answers(x.raw, x.referer)));
+      const minutes = await Promise.resolve(episodeRuntime?.(id, season, episode)).catch(() => null);
+      const checks = await Promise.all(qualities.map((x) => answers(x.raw, x.referer, minutes)));
       const working = qualities.filter((_, i) => checks[i]).map(({ raw, referer, ...x }) => x);
-      if (!working.length) { lastErr = new Error("no working stream for this episode"); continue; }
+      if (!working.length) { lastErr = new Error(qualities.length ? "only a different show came back for this episode" : "no working stream for this episode"); continue; }
       let subtitles = parseStreams(data).subtitles;
       if (!subtitles.length) {
         try { subtitles = parseStreams(await call(node, `/api/subtitles?id=${id}&${q}`, id)).subtitles; } catch {}

@@ -21,12 +21,26 @@ export function setup(rt, config = {}) {
   if (Array.isArray(config.blockedTags)) BLOCKED = config.blockedTags;
 }
 
+// nhentai's v2 API can take 40-75 s (images stay fast), past the runtime's 15 s default:
+// give it 110 s (the web proxy allows 120), share one request between callers asking the same thing, and keep answers 10 min.
+const API_TIMEOUT_MS = 110_000;
+const CACHE_MS = 10 * 60_000;
+const cache = new Map();
 async function api(path) {
-  const r = await smartFetch(`${API}${path}`, {
-    headers: { "User-Agent": UA, Accept: "application/json", Referer: "https://nhentai.net/" },
-  });
-  if (!r.ok) throw new Error(`nhentai: HTTP ${r.status}`);
-  return r.json();
+  const hit = cache.get(path);
+  if (hit && hit.until > Date.now()) return hit.value;
+  const value = (async () => {
+    const r = await smartFetch(`${API}${path}`, {
+      headers: { "User-Agent": UA, Accept: "application/json", Referer: "https://nhentai.net/" },
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    }).catch((e) => { throw new Error(e?.name === "TimeoutError" || e?.name === "AbortError" ? "nhentai is very slow right now; try again in a minute" : `nhentai: ${e.message}`); });
+    if (!r.ok) throw new Error(`nhentai: HTTP ${r.status}`);
+    return r.json();
+  })();
+  cache.set(path, { value, until: Date.now() + CACHE_MS });
+  value.catch(() => cache.delete(path));
+  if (cache.size > 200) cache.delete(cache.keys().next().value);
+  return value;
 }
 
 const proxied = (base, path) => (path ? `/manga-image?url=${encodeURIComponent(`${base}/${path}`)}` : null);

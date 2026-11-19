@@ -328,10 +328,36 @@ async function vegaFastDl(url) {
   }
 }
 
+// Newer MoviesDrive posts link to hubcloud.ist/drive/search-recover.php, a JS app
+// whose file list is fetched from ?api=search. Decode the base64 `q` param, call
+// the API, and continue resolving the first matching file page.
+async function hubcloudSearchRecoverFile(url) {
+  try {
+    const u = new URL(url);
+    const q = u.searchParams.get("q");
+    const fromAc = u.searchParams.get("from_ac");
+    if (!q || !fromAc) return null;
+    let decoded;
+    try { decoded = Buffer.from(q, "base64").toString("utf8"); } catch { return null; }
+    const api = `${u.origin}${u.pathname}?from_ac=${encodeURIComponent(fromAc)}&q=${encodeURIComponent(decoded)}&api=search&page=1`;
+    const r = await dnsFetch(api, { headers: { "User-Agent": UA, Accept: "application/json", Referer: url } });
+    if (!r.ok) return null;
+    const data = await r.json().catch(() => null);
+    const hit = data?.hits?.[0];
+    if (!hit?.url) return null;
+    return hit.url;
+  } catch { return null; }
+}
+
 async function vegaResolveDownloadLink(link, epNum, base) {
   if (/fast-dl\.|vgmlinks/i.test(link)) {
     const direct = await vegaFastDl(link);
     return direct ? [{ server: "G-Direct", url: direct }] : [];
+  }
+  // HubCloud search-recover gateway: the HTML has no links; results come from an API.
+  if (/hubcloud\.[a-z]+\/drive\/search-recover\.php/i.test(link)) {
+    const fileUrl = await hubcloudSearchRecoverFile(link);
+    return fileUrl ? vegaResolveDownloadLink(fileUrl, epNum, base) : [];
   }
   let vcloud = link;
   if (!/vcloud|hubcloud/i.test(link)) {

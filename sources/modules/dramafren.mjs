@@ -24,7 +24,7 @@ export const DEFAULT_CONFIG = {
   defaultPlatform: 'dramabox', defaultLang: 'en',
   defaultServers: { goodshort: 2 },
   sites: {
-    dramafren: { label: 'DramaFren', base: 'https://dramafren.org', note: 'Chinese short dramas; often full-series compilations with English subtitles' },
+    dramafren: { label: 'DramaFren', base: 'https://v2.dramafren.org', note: 'Chinese short dramas; often full-series compilations with English subtitles' },
     dramabox: { label: 'DramaBox', base: 'https://dramabox.dramafren.org' },
     dramawave: { label: 'DramaWave', base: 'https://dramawave.dramafren.org' },
     goodshort: { label: 'GoodShort', base: 'https://goodshort.dramafren.org', note: 'Server 2 verified; server 1 proxy challenged when checked 2026-11-01' },
@@ -168,14 +168,18 @@ export function parseCatalog(html, base, platform, lang) {
     const a = attrs(m[1]), href = httpUrl(a.href, base);
     if (!href) continue;
     const u = new URL(href);
-    if (u.origin !== new URL(base).origin || (platform === 'dramafren' ? !/^\/(series|watch)\/[^/]+\/?$/.test(u.pathname) : u.searchParams.get('page') !== 'detail')) continue;
-    const id = platform === 'dramafren' ? u.pathname : u.searchParams.get('id');
+    // v2 also lists DramaBox-backed shows as /?msdb_book=<id> (episodes come from its playlist API).
+    const book = platform === 'dramafren' && u.origin === new URL(base).origin ? u.searchParams.get('msdb_book') : null;
+    if (book && !/^\d{1,24}$/.test(book)) continue;
+    if (!book && (u.origin !== new URL(base).origin || (platform === 'dramafren' ? !/^\/(series|watch)\/[^/]+\/?$/.test(u.pathname) : u.searchParams.get('page') !== 'detail'))) continue;
+    const id = book ? `book:${book}` : platform === 'dramafren' ? u.pathname : u.searchParams.get('id');
     const image = m[2].match(/<img\b[^>]*>/i)?.[0];
     const img = image ? attrs(image) : {};
     const title = text(m[2].match(/<h[23]\b[^>]*>([\s\S]*?)<\/h[23]>/i)?.[1] || a.title || img.alt || m[2]).replace(/\s*Watch Now(?:\s*\([A-Z_-]+\))?\s*$/i, '').trim();
     if (!id || !title) continue;
     u.searchParams.set('lang', lang);
     if (platform === 'dramafren') u.searchParams.delete('lang');
+    if (book) { u.search = ''; u.pathname = '/'; u.searchParams.set('msdb_book', book); u.searchParams.set('msdb_lang', 'en'); }
     const item = { id, platform, title, lang, url: u.href, poster: httpUrl(img['data-src'] || img.src, base) };
     const old = items.get(id);
     if (!old || (!old.poster && item.poster)) items.set(id, item);
@@ -297,8 +301,12 @@ export function createDramafrenSource(rt = {}, config = {}) {
   }
   function nativeUrl(s, value, lang) {
     let url;
+    // DramaFren moved to v2.dramafren.org; links saved from the old address still open.
+    if (s.platform === 'dramafren' && /^https?:\/\/(?:www\.)?dramafren\.org\//.test(value || '')) value = value.replace(/^https?:\/\/(?:www\.)?dramafren\.org/, s.base);
+    if (s.platform === 'dramafren' && /^book:\d{1,24}$/.test(value || '')) value = `${s.base}/?msdb_book=${value.slice(5)}&msdb_lang=en`;
     if (/^https?:/.test(value || '')) {
       url = new URL(value);
+      if (s.platform === 'dramafren' && url.origin === s.base && /^\d{1,24}$/.test(url.searchParams.get('msdb_book') || '')) return `${s.base}/?msdb_book=${url.searchParams.get('msdb_book')}&msdb_lang=en`;
       if (url.origin !== s.base || (s.platform === 'dramafren' ? !/^\/(series|watch)\/[^/]+\/?$/.test(url.pathname) : url.pathname !== '/index.php' || !['detail', 'watch'].includes(url.searchParams.get('page')))) fail('invalid drama URL', 'BAD_REQUEST');
     } else if (s.platform === 'dramafren') {
       if (/^\/(series|watch)\/[\p{L}\p{N}_-]+\/?$/u.test(value || '')) url = new URL(value, s.base);
@@ -315,7 +323,8 @@ export function createDramafrenSource(rt = {}, config = {}) {
   }
   function options(input = {}) {
     const native = [input.url, input.dramaId, input.id].find(v => typeof v === 'string' && v.startsWith('https://'));
-    const inferred = native && Object.entries(sites).find(([, s]) => new URL(s.base).origin === new URL(native).origin)?.[0];
+    const nativeOrigin = native && new URL(native).origin.replace(/^https:\/\/(?:www\.)?dramafren\.org$/, sites.dramafren ? new URL(sites.dramafren.base).origin : 'https://dramafren.org');
+    const inferred = native && Object.entries(sites).find(([, s]) => new URL(s.base).origin === nativeOrigin)?.[0];
     const s = site(input.platform || inferred), lang = languageFor(s.platform, input.lang || config.defaultLang || 'en');
     return { s, lang };
   }
@@ -335,9 +344,51 @@ export function createDramafrenSource(rt = {}, config = {}) {
     const data = await read(u.href, 60000);
     return { platform: s.platform, lang, ...parseCatalog(data.body, u.href, s.platform, lang) };
   }
+  // v2's own player: POST admin-ajax.php action=msdb_playlist -> episodes with signed MP4 links per quality.
+  async function bookPlaylist(s, book) {
+    const ajax = `${s.base}/wp-admin/admin-ajax.php`;
+    const fetcher = rt.smartFetch || rt.dnsFetch || fetch;
+    const r = await fetcher(ajax, {
+      method: 'POST',
+      headers: { 'User-Agent': rt.UA || 'Mozilla/5.0', 'Content-Type': 'application/x-www-form-urlencoded', Origin: s.base, Referer: `${s.base}/?msdb_book=${book}&msdb_lang=en` },
+      body: new URLSearchParams({ action: 'msdb_playlist', book, chapter: '', lang: 'en' }).toString(),
+      signal: AbortSignal.timeout(config.timeoutMs || 20000),
+    });
+    const body = await r.text();
+    if (challenge(body)) fail('Cloudflare check pending on the episode list; retry shortly', 'NEEDS_CHECK');
+    let data;
+    try { data = JSON.parse(body); } catch { fail('invalid episode list response', 'UPSTREAM'); }
+    if (!data?.success || !Array.isArray(data.data?.episodes)) fail(data?.data?.message || 'episode list unavailable', 'UPSTREAM');
+    const seen = new Set();
+    return data.data.episodes.filter(e => e && /^\d{1,24}$/.test(String(e.id)) && !seen.has(String(e.id)) && seen.add(String(e.id))).map((e, i) => {
+      const sources = {};
+      for (const k of ['1080', '720', '540', 'auto']) { try { if (typeof e.sources?.[k] === 'string' && new URL(e.sources[k]).protocol === 'https:') sources[k] = e.sources[k]; } catch {} }
+      return { id: String(e.id), name: typeof e.name === 'string' ? e.name : `EP ${i + 1}`, sources };
+    });
+  }
+  async function bookDetail(s, url, lang) {
+    const book = new URL(url).searchParams.get('msdb_book');
+    const [page, list] = await Promise.all([read(url, 300000), bookPlaylist(s, book)]);
+    const html = page.body;
+    const title = text(html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] || meta(html, 'og:title'));
+    const poster = httpUrl(html.match(/msdb-detail-poster[\s\S]*?<img\b[^>]*\bsrc=["']([^"']+)/i)?.[1] || meta(html, 'og:image'), url);
+    const description = text(html.match(/msdb-synopsis[^>]*>([\s\S]*?)<\/div>/i)?.[1] || '') || meta(html, 'description');
+    const episodes = list.map((e, i) => {
+      const n = Number(String(e.name).match(/\d+/)?.[0]) || i + 1;
+      const epUrl = new URL(url); epUrl.searchParams.set('msdb_episode', e.id);
+      return { number: n, nativeEpisode: e.id, title: /^EP\s*\d+$/i.test(e.name) ? `Episode ${n}` : e.name, url: epUrl.href, sources: e.sources };
+    });
+    return { title, url, platform: s.platform, lang, poster, description, book, episodes };
+  }
   async function detail(value, input = {}) {
     const { s, lang } = options({ ...input, url: value });
     let url = nativeUrl(s, String(value || ''), lang);
+    if (s.platform === 'dramafren' && new URL(url).searchParams.has('msdb_book')) {
+      const result = await bookDetail(s, url, lang);
+      if (!result.title || !result.episodes.length) fail('title or episodes not found', 'NOT_FOUND');
+      // Signed links expire; detail is for listing, resolve asks for fresh ones.
+      return { ...result, episodes: result.episodes.map(({ sources, ...e }) => e) };
+    }
     let data = await read(url, 300000);
     if (s.platform === 'dramafren' && new URL(url).pathname.startsWith('/watch/')) {
       const parent = data.body.match(/itemprop=["']partOfSeries["'][^>]*>[\s\S]*?<a\b([^>]*)>/i)?.[1];
@@ -372,6 +423,17 @@ export function createDramafrenSource(rt = {}, config = {}) {
       const matches = found.items.filter(item => norm(item.title) === norm(title));
       if (matches.length !== 1) fail(matches.length ? 'ambiguous title; use a native URL' : 'title not found', 'NOT_FOUND');
       target = matches[0].url;
+    }
+    const bookUrl = s.platform === 'dramafren' ? nativeUrl(s, String(target), lang) : null;
+    if (bookUrl && new URL(bookUrl).searchParams.has('msdb_book')) {
+      const info = await bookDetail(s, bookUrl, lang);
+      const ep = info.episodes.find(e => e.number === episode) || info.episodes[episode - 1];
+      if (!ep) fail(`episode ${episode} not found`, 'NOT_FOUND');
+      const qualities = [];
+      for (const k of ['1080', '720', '540']) if (ep.sources[k]) qualities.push({ quality: `${k}p`, url: ep.sources[k], type: 'mp4', cdn: new URL(ep.sources[k]).host, headers: { Referer: `${s.base}/` } });
+      if (!qualities.length && ep.sources.auto) qualities.push({ quality: 'auto', url: ep.sources.auto, type: 'mp4', cdn: new URL(ep.sources.auto).host, headers: { Referer: `${s.base}/` } });
+      if (!qualities.length) fail('no video for this episode yet', 'NO_STREAM');
+      return { provider: 'dramafren', platform: s.platform, lang, referer: `${s.base}/`, cdn: qualities[0].cdn, qualities, subtitles: [], verified: true, title: info.title, episode };
     }
     const info = await detail(target, { platform: s.platform, lang });
     const ep = info.episodes.find(e => e.number === episode);
