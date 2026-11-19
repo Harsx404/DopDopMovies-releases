@@ -243,8 +243,19 @@ export async function driveseedDirect(pageUrl) {
     || html.match(/href="(https?:\/\/[^"]*video-(?:gen|seed)[^"]+)"/i)?.[1];
   if (!instant) throw new Error("No instant download on this file page");
   // Plain fetch: the redirect itself is the answer (dnsFetch follows redirects).
-  const r = await fetch(instant, { redirect: "manual", headers: { "User-Agent": UA(), Referer: pageUrl }, signal: AbortSignal.timeout(25_000) });
-  const loc = r.headers.get("location") || "";
+  let hopUrl = instant, referer = pageUrl, r, loc = "";
+  // The CDN may first answer with a "Loading…" page whose script moves on to /upload?url=…;
+  // that answers with the redirect, or with "File Not Found" once the host has dropped the file.
+  for (let hop = 0; hop < 3; hop++) {
+    r = await fetch(hopUrl, { redirect: "manual", headers: { "User-Agent": UA(), Referer: referer }, signal: AbortSignal.timeout(25_000) });
+    loc = r.headers.get("location") || "";
+    if (loc || r.status !== 200 && r.status !== 404) break;
+    const body = await r.text();
+    if (/file not found/i.test(body)) throw new Error("The host no longer has this file; try another release");
+    const next = body.match(/window\.location\.href\s*=\s*["']([^"']+)["']/)?.[1];
+    if (!next) break;
+    referer = hopUrl; hopUrl = new URL(next, hopUrl).href;
+  }
   const direct = (() => { try { return new URL(loc).searchParams.get("url") || loc; } catch { return loc; } })();
   if (!/^https:\/\//.test(direct)) throw new Error("The file host didn't give a link");
   return { url: direct, name, size };

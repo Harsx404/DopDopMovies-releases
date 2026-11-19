@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "version": "2026.11.19.1",
+  "version": "2026.11.19.2",
   "minApp": "1.2.21",
   "modules": {
     "videasy": {
@@ -400,7 +400,7 @@
     },
     "files-modpro": {
       "file": "modules/files-modpro.mjs",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "config": {
         "sites": {
           "uhdmovies": {
@@ -827,7 +827,7 @@
     "modules/audio-radio.mjs": "fa5bd058b22fffb290b7ce9d0ab259e1a72d98443c8ba0e782bbb347e151df3c",
     "modules/cartoons.mjs": "9f2111a190d03281a20762afe50355dc80d3ca0a01926bda057ddbf69f6ee74f",
     "modules/dramafren.mjs": "72c069fe6fc5bd98566117a701a7976bed83023d4db94ae70571e1eaa317330d",
-    "modules/files-modpro.mjs": "860c82237297b0275d0357a227c0b0a40f4b0127083b1cf4d1ee5c98b60e0e0b",
+    "modules/files-modpro.mjs": "2fc87e48d996cb6b7d91c0694f3891d8d2fb2d519f4c6c4c193c36cdbe183551",
     "modules/games-ankergames.mjs": "6569d699e07208fa38e701df15ba1747887b64d15f123c49c6c5b80f1ba02db1",
     "modules/games-astralgames.mjs": "2522836ae106d40feb5ae607778b68c26dd66f6c97ae79cdd56ca996689c81ee",
     "modules/games-browser.mjs": "179736e7fcc656c1d3fff321daa41cb59db744440630ffd062bd943603526654",
